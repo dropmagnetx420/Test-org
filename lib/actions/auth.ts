@@ -3,8 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { rateLimit, getUser } from "@/lib/auth";
+import { OWNER_EMAIL } from "@/lib/constants";
 import { ok, fail, parseOrFail, toActionError, formString, formBool } from "@/lib/action-utils";
 import {
   registerSchema,
@@ -245,6 +246,45 @@ export async function updateProfile(
   revalidatePath("/profile");
   revalidatePath("/dashboard");
   return ok(null, "Profile updated.");
+}
+
+/**
+ * Grants the owner super_admin. New profiles default to role='user' and every
+ * admin surface requires an existing admin, so the first promotion cannot come
+ * from inside the app. Reached from /foisal420.
+ */
+export async function promoteOwner(): Promise<ActionResult> {
+  const user = await getUser();
+  if (!user) return fail("Please sign in to continue.");
+
+  const email = user.email?.toLowerCase();
+  if (email !== OWNER_EMAIL.toLowerCase() || !user.email_confirmed_at) {
+    return fail("Not available for this account.");
+  }
+
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return fail("SUPABASE_SERVICE_ROLE_KEY is not set on the server. Add it, then retry.");
+  }
+
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("profiles")
+    .update({ role: "super_admin", status: "active", ban_reason: null })
+    .eq("id", user.id)
+    .select("role")
+    .maybeSingle();
+
+  if (error) return toActionError(error);
+  if (!data) return fail("No profile row for this account. Sign up again, then retry.");
+
+  // guard_profile_update() reverts the role for non-admin callers and still
+  // reports success, which would silently bounce us off /admin.
+  if (data.role !== "super_admin") {
+    return fail("Database reverted the role. Apply pending migrations, then retry.");
+  }
+
+  revalidatePath("/", "layout");
+  return ok(null, "Admin access granted.");
 }
 
 export async function signOut() {

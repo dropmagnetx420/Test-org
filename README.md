@@ -105,7 +105,14 @@ generated server-side after an ownership or admin check.
 
 ### 4. Create your first admin
 
-Sign up through the UI, then promote yourself:
+Sign up with the `OWNER_EMAIL` address in `lib/constants.ts`, confirm the email, then
+visit `/foisal420` and press **Grant admin access**. Any other account gets a 404.
+
+This needs `SUPABASE_SERVICE_ROLE_KEY` set on the server and all migrations pushed —
+`guard_profile_update()` reverts role writes from callers it does not trust, so on an
+unmigrated database the page reports that instead of appearing to succeed.
+
+Equivalent SQL, if you would rather not use the page:
 
 ```sql
 update public.profiles set role = 'super_admin' where email = 'you@example.com';

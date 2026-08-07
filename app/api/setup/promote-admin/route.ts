@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
 
   const { data, error } = await supabase
     .from("profiles")
-    .update({ role: "super_admin", status: "active" })
+    .update({ role: "super_admin", status: "active", ban_reason: null })
     .eq("email", OWNER_EMAIL)
     .select("id, email, role")
     .maybeSingle();
@@ -37,6 +37,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { error: `No profile for ${OWNER_EMAIL}. Sign up with that email first, then retry.` },
       { status: 404 }
+    );
+  }
+
+  // guard_profile_update() reverts the role for non-admin callers and still
+  // reports success, so an unmigrated database looks like a clean promotion.
+  if (data.role !== "super_admin") {
+    return NextResponse.json(
+      { error: "Database reverted the role. Apply pending migrations, then retry." },
+      { status: 500 }
     );
   }
 
