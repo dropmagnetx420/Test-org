@@ -161,3 +161,9 @@ export const AD_FORMATS = [
   { value: "interstitial", label: "Interstitial" },
   { value: "rewarded_video", label: "Rewarded video" },
 ] as const;
+
+/**
+ * The only account that can claim super_admin via /foisal420. Hardcoded rather
+ * than env-driven so a misconfigured deploy can never widen who may claim it.
+ */
+export const OWNER_EMAIL = "foysalqbl@gmail.com";

@@ -1,11 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/server";
+import { OWNER_EMAIL } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
-
-/** Hardcoded so a leaked secret can never promote an arbitrary account. */
-const OWNER_EMAIL = "foysalqbl@gmail.com";
 
 /**
  * One-time bootstrap for the first super_admin. New profiles default to
