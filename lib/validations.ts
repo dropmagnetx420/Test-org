@@ -241,6 +241,7 @@ export const balanceAdjustSchema = z.object({
 export const siteSettingsSchema = z.object({
   siteName: z.string().trim().min(2).max(60),
   siteTagline: z.string().trim().max(120).optional().or(z.literal("")),
+  logoUrl: z.string().trim().max(500).optional().or(z.literal("")),
   supportEmail: z.string().trim().email().optional().or(z.literal("")),
   twitterUrl: z.string().trim().url().max(300).optional().or(z.literal("")),
   telegramUrl: z.string().trim().url().max(300).optional().or(z.literal("")),
@@ -351,6 +352,8 @@ export const adPlacementSchema = z.object({
   scriptUrl: z.string().trim().url().max(500).optional().or(z.literal("")),
   scriptKey: z.string().trim().max(200).optional().or(z.literal("")),
   isActive: z.boolean().default(false),
+  width: z.number().int().min(1).max(2000).nullable().default(null),
+  height: z.number().int().min(1).max(2000).nullable().default(null),
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;

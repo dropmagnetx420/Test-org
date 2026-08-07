@@ -13,7 +13,13 @@ export default async function PublicLayout({ children }: { children: React.React
 
   return (
     <>
-      <SiteHeader profile={profile} wallet={wallet} />
+      <SiteHeader
+        profile={profile}
+        wallet={wallet}
+        siteName={settings.site_name}
+        logoUrl={settings.logo_url}
+      />
+      <AdSlot placement="header" className="mx-auto mt-4 w-full max-w-7xl px-4 sm:px-6 lg:px-8" />
       <main className="flex-1">{children}</main>
       <AdSlot placement="footer" className="mx-auto mb-6 w-full max-w-7xl px-4 sm:px-6 lg:px-8" />
       <SiteFooter settings={settings} />

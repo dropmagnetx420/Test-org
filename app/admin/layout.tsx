@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
-import { requireAdmin, getWallet } from "@/lib/auth";
+import { requireAdmin, getWallet, getSettings } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { SiteHeader } from "@/components/shared/site-header";
 import { AdminNav } from "@/components/admin/admin-nav";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const profile = await requireAdmin();
-  const wallet = await getWallet();
+  const [wallet, settings] = await Promise.all([getWallet(), getSettings()]);
 
   const supabase = await createClient();
   const [deposits, withdrawals, kyc, tasks] = await Promise.all([
@@ -31,7 +31,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <>
-      <SiteHeader profile={profile} wallet={wallet} />
+      <SiteHeader
+        profile={profile}
+        wallet={wallet}
+        siteName={settings.site_name}
+        logoUrl={settings.logo_url}
+      />
 
       <div className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-6 flex items-center justify-between gap-4 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3">

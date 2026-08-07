@@ -11,6 +11,7 @@ import {
   formString,
   formNumber,
   formBool,
+  optionalNumber,
 } from "@/lib/action-utils";
 import {
   marketSchema,
@@ -30,6 +31,7 @@ import {
   adPlacementSchema,
 } from "@/lib/validations";
 import type { ActionResult, Market } from "@/types/database";
+import { STORAGE_BUCKETS } from "@/lib/constants";
 
 function slugify(input: string) {
   return input
@@ -553,6 +555,38 @@ export async function setUserRole(
 }
 
 // ======================================================== SITE SETTINGS
+const MAX_LOGO_BYTES = 2 * 1024 * 1024;
+const LOGO_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+/**
+ * Uploads a site logo into the public branding folder and returns its public
+ * URL. The storage policy gates writes on is_admin(), and the branding path is
+ * reserved for admins, so no per-user segment is needed.
+ */
+export async function uploadSiteLogo(fd: FormData): Promise<ActionResult<{ url: string }>> {
+  await requireAdmin();
+
+  const file = fd.get("file");
+  if (!(file instanceof File) || file.size === 0) return fail("Select an image to upload.");
+  if (file.size > MAX_LOGO_BYTES) return fail("Logo is too large. Maximum size is 2 MB.");
+  if (!LOGO_TYPES.includes(file.type)) {
+    return fail("Unsupported file type. Upload a JPG, PNG or WebP image.");
+  }
+
+  const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "png";
+  const path = `branding/logo-${Date.now()}.${ext}`;
+
+  const supabase = await createClient();
+  const { error } = await supabase.storage
+    .from(STORAGE_BUCKETS.PUBLIC)
+    .upload(path, file, { upsert: false, contentType: file.type });
+
+  if (error) return toActionError(error);
+
+  const { data } = supabase.storage.from(STORAGE_BUCKETS.PUBLIC).getPublicUrl(path);
+  return ok({ url: data.publicUrl });
+}
+
 export async function updateSiteSettings(
   _prev: ActionResult | null,
   fd: FormData
@@ -562,6 +596,7 @@ export async function updateSiteSettings(
   const parsed = parseOrFail(siteSettingsSchema, {
     siteName: formString(fd, "siteName"),
     siteTagline: formString(fd, "siteTagline"),
+    logoUrl: formString(fd, "logoUrl"),
     supportEmail: formString(fd, "supportEmail"),
     twitterUrl: formString(fd, "twitterUrl"),
     telegramUrl: formString(fd, "telegramUrl"),
@@ -600,6 +635,7 @@ export async function updateSiteSettings(
     .update({
       site_name: d.siteName,
       site_tagline: d.siteTagline || null,
+      logo_url: d.logoUrl || null,
       support_email: d.supportEmail || null,
       twitter_url: d.twitterUrl || null,
       telegram_url: d.telegramUrl || null,
@@ -1006,6 +1042,8 @@ export async function saveAdPlacement(
     scriptUrl: formString(fd, "scriptUrl"),
     scriptKey: formString(fd, "scriptKey"),
     isActive: formBool(fd, "isActive"),
+    width: optionalNumber(fd, "width"),
+    height: optionalNumber(fd, "height"),
   });
   if (!parsed.ok) return parsed.result;
 
@@ -1020,6 +1058,8 @@ export async function saveAdPlacement(
     p_script_url: d.scriptUrl || null,
     p_script_key: d.scriptKey || null,
     p_is_active: d.isActive,
+    p_width: d.width,
+    p_height: d.height,
   });
 
   if (error) return toActionError(error);

@@ -34,7 +34,7 @@ export function SiteFooter({ settings }: { settings: SiteSettings | null }) {
     <footer className="mt-20 border-t border-border/50 bg-background/60 backdrop-blur-xl">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-4 lg:px-8">
         <div className="space-y-4 md:col-span-2">
-          <Logo />
+          <Logo logoUrl={settings?.logo_url} siteName={settings?.site_name ?? "NextGen Predict"} />
           <p className="max-w-sm text-sm text-muted-foreground">
             {settings?.site_tagline || SITE_DESCRIPTION}
           </p>

@@ -108,6 +108,13 @@ export function formNumber(fd: FormData, key: string): number {
   return Number(raw);
 }
 
+/** Blank means "not set" rather than zero, so it maps to null instead of NaN. */
+export function optionalNumber(fd: FormData, key: string): number | null {
+  const raw = fd.get(key);
+  if (raw === null || raw === "") return null;
+  return Number(raw);
+}
+
 export function formString(fd: FormData, key: string): string {
   const raw = fd.get(key);
   return typeof raw === "string" ? raw : "";

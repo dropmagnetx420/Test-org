@@ -178,6 +178,45 @@ function PlacementCard({
                 className="font-mono text-xs"
               />
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor={`${slot}-width`}>
+                Width <span className="text-muted-foreground">(optional)</span>
+              </Label>
+              <Input
+                id={`${slot}-width`}
+                name="width"
+                type="number"
+                min="1"
+                max="2000"
+                defaultValue={config?.width ?? ""}
+                className="font-mono text-xs"
+                placeholder="300"
+              />
+              {err?.width && <p className="text-xs text-red-400">{err.width[0]}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor={`${slot}-height`}>
+                Height <span className="text-muted-foreground">(optional)</span>
+              </Label>
+              <Input
+                id={`${slot}-height`}
+                name="height"
+                type="number"
+                min="1"
+                max="2000"
+                defaultValue={config?.height ?? ""}
+                className="font-mono text-xs"
+                placeholder="250"
+              />
+              {err?.height && <p className="text-xs text-red-400">{err.height[0]}</p>}
+            </div>
+
+            <p className="text-xs text-muted-foreground sm:col-span-2">
+              Adsterra display banners must match the size of the unit in your dashboard. Leave
+              blank for 300×250.
+            </p>
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/60 bg-secondary/30 p-3">

@@ -350,6 +350,8 @@ export interface AdPlacementConfig {
   script_key: string | null;
   is_active: boolean;
   position: number;
+  width: number | null;
+  height: number | null;
   created_at: string;
   updated_at: string;
 }

@@ -21,9 +21,13 @@ const NAV = [
 export function SiteHeader({
   profile,
   wallet,
+  siteName,
+  logoUrl,
 }: {
   profile: Profile | null;
   wallet: Wallet | null;
+  siteName?: string;
+  logoUrl?: string | null;
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -31,8 +35,8 @@ export function SiteHeader({
   return (
     <header className="sticky top-0 z-50 border-b border-border/50 bg-background/70 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="shrink-0" aria-label="NextGen Predict home">
-          <Logo />
+        <Link href="/" className="shrink-0" aria-label={`${siteName ?? "NextGen Predict"} home`}>
+          <Logo logoUrl={logoUrl} siteName={siteName} />
         </Link>
 
         <nav className="hidden flex-1 items-center gap-1 md:flex">
