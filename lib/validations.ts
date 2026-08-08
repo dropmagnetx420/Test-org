@@ -263,6 +263,8 @@ export const siteSettingsSchema = z.object({
   withdrawalFeePercent: z.number().min(0).max(20),
   welcomeBonus: z.number().min(0).max(10_000),
   depositBonusPercent: z.number().min(0).max(100),
+  firstDepositBonusPercent: z.number().min(0).max(500),
+  firstDepositBonusMax: z.number().min(0).max(1_000_000),
   bonusTurnoverMultiplier: z.number().min(0).max(100),
   referralCommissionPercent: z.number().min(0).max(50),
   kycRequiredForWithdrawal: z.boolean(),

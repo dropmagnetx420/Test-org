@@ -428,6 +428,8 @@ export interface SiteSettings {
   withdrawal_fee_percent: string;
   welcome_bonus: string;
   deposit_bonus_percent: string;
+  first_deposit_bonus_percent: string;
+  first_deposit_bonus_max: string;
   bonus_turnover_multiplier: string;
   referral_commission_percent: string;
   kyc_required_for_withdrawal: boolean;

@@ -1,9 +1,11 @@
+import { Suspense } from "react";
 import { requireProfile, getWallet, getSettings, isAdminRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { SiteHeader } from "@/components/shared/site-header";
 import { SiteFooter } from "@/components/shared/site-footer";
 import { MaintenanceNotice } from "@/components/shared/maintenance-notice";
 import { AdSlot } from "@/components/shared/ad-slot";
+import { PromoBar } from "@/components/shared/promo-bar";
 import { DashboardNav } from "@/components/dashboard/dashboard-nav";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -29,6 +31,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         siteName={settings.site_name}
         logoUrl={settings.logo_url}
       />
+      <Suspense fallback={null}>
+        <PromoBar className="mx-auto mt-4 w-full max-w-7xl px-4 sm:px-6 lg:px-8" />
+      </Suspense>
       <AdSlot placement="header" className="mx-auto mt-4 w-full max-w-7xl px-4 sm:px-6 lg:px-8" />
 
       <div className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:px-8">

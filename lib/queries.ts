@@ -58,10 +58,15 @@ export const getFeaturedMarkets = cache(async (limit = 4): Promise<Market[]> => 
 
 export const getActiveBanners = cache(async (): Promise<PromoBanner[]> => {
   const supabase = await createClient();
+  // claim_promo enforces the window too, so an unfiltered banner would render
+  // and then fail with PROMO_EXPIRED on click.
+  const now = new Date().toISOString();
   const { data } = await supabase
     .from("promo_banners")
     .select("*")
     .eq("is_active", true)
+    .or(`starts_at.is.null,starts_at.lte.${now}`)
+    .or(`ends_at.is.null,ends_at.gte.${now}`)
     .order("position", { ascending: true });
   return (data as PromoBanner[]) ?? [];
 });

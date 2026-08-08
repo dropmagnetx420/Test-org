@@ -601,6 +601,32 @@ export async function uploadSiteLogo(fd: FormData): Promise<ActionResult<{ url: 
   return ok({ url: data.publicUrl });
 }
 
+const MAX_BANNER_BYTES = 4 * 1024 * 1024;
+
+export async function uploadBannerImage(fd: FormData): Promise<ActionResult<{ url: string }>> {
+  await requireAdmin();
+
+  const file = fd.get("file");
+  if (!(file instanceof File) || file.size === 0) return fail("Select an image to upload.");
+  if (file.size > MAX_BANNER_BYTES) return fail("Image is too large. Maximum size is 4 MB.");
+  if (!LOGO_TYPES.includes(file.type)) {
+    return fail("Unsupported file type. Upload a JPG, PNG or WebP image.");
+  }
+
+  const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "png";
+  const path = `banners/banner-${Date.now()}.${ext}`;
+
+  const supabase = await createClient();
+  const { error } = await supabase.storage
+    .from(STORAGE_BUCKETS.PUBLIC)
+    .upload(path, file, { upsert: false, contentType: file.type });
+
+  if (error) return toActionError(error);
+
+  const { data } = supabase.storage.from(STORAGE_BUCKETS.PUBLIC).getPublicUrl(path);
+  return ok({ url: data.publicUrl });
+}
+
 export async function updateSiteSettings(
   _prev: ActionResult | null,
   fd: FormData
@@ -625,6 +651,8 @@ export async function updateSiteSettings(
     withdrawalFeePercent: formNumber(fd, "withdrawalFeePercent"),
     welcomeBonus: formNumber(fd, "welcomeBonus"),
     depositBonusPercent: formNumber(fd, "depositBonusPercent"),
+    firstDepositBonusPercent: formNumber(fd, "firstDepositBonusPercent"),
+    firstDepositBonusMax: formNumber(fd, "firstDepositBonusMax"),
     bonusTurnoverMultiplier: formNumber(fd, "bonusTurnoverMultiplier"),
     referralCommissionPercent: formNumber(fd, "referralCommissionPercent"),
     kycRequiredForWithdrawal: formBool(fd, "kycRequiredForWithdrawal"),
@@ -664,6 +692,8 @@ export async function updateSiteSettings(
       withdrawal_fee_percent: d.withdrawalFeePercent,
       welcome_bonus: d.welcomeBonus,
       deposit_bonus_percent: d.depositBonusPercent,
+      first_deposit_bonus_percent: d.firstDepositBonusPercent,
+      first_deposit_bonus_max: d.firstDepositBonusMax,
       bonus_turnover_multiplier: d.bonusTurnoverMultiplier,
       referral_commission_percent: d.referralCommissionPercent,
       kyc_required_for_withdrawal: d.kycRequiredForWithdrawal,

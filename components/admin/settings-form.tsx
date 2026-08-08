@@ -180,8 +180,25 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
           name="depositBonusPercent"
           label="Deposit bonus (%)"
           step="0.01"
+          hint="Applied to every deposit after the first one."
           defaultValue={toNumber(settings.deposit_bonus_percent)}
           error={err?.depositBonusPercent?.[0]}
+        />
+        <Num
+          name="firstDepositBonusPercent"
+          label="First deposit bonus (%)"
+          step="0.01"
+          hint="Replaces the deposit bonus on a user's first approved deposit. 100 means match it exactly."
+          defaultValue={toNumber(settings.first_deposit_bonus_percent)}
+          error={err?.firstDepositBonusPercent?.[0]}
+        />
+        <Num
+          name="firstDepositBonusMax"
+          label="First deposit bonus cap (USDG)"
+          step="0.01"
+          hint="Largest first deposit bonus payable. 0 means uncapped."
+          defaultValue={toNumber(settings.first_deposit_bonus_max)}
+          error={err?.firstDepositBonusMax?.[0]}
         />
         <Num
           name="bonusTurnoverMultiplier"

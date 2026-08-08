@@ -6,16 +6,8 @@ import { MarketSection } from "@/components/landing/market-section";
 import { Stats } from "@/components/landing/stats";
 import { Faq } from "@/components/landing/faq";
 import { Partners } from "@/components/landing/partners";
-import { PromoBanners } from "@/components/shared/promo-banners";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getUser } from "@/lib/auth";
-import {
-  getActiveBanners,
-  getLiveMarkets,
-  getPartners,
-  getPublicStats,
-  getTrendingMarkets,
-} from "@/lib/queries";
+import { getLiveMarkets, getPartners, getPublicStats, getTrendingMarkets } from "@/lib/queries";
 
 export const revalidate = 30;
 
@@ -63,17 +55,6 @@ async function TrendingMarkets() {
   );
 }
 
-async function PromoSection() {
-  const [banners, user] = await Promise.all([getActiveBanners(), getUser()]);
-  if (banners.length === 0) return null;
-
-  return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <PromoBanners banners={banners} isAuthenticated={Boolean(user)} />
-    </div>
-  );
-}
-
 async function PartnersSection() {
   const partners = await getPartners();
   return <Partners partners={partners} />;
@@ -89,10 +70,6 @@ export default async function HomePage() {
         openMarkets={stats.openMarkets}
         traders={stats.totalUsers}
       />
-
-      <Suspense fallback={null}>
-        <PromoSection />
-      </Suspense>
 
       <SportsNav counts={stats.sportCounts} />
 

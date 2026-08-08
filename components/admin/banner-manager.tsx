@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState, useTransition } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Loader2, Megaphone, Pencil, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,7 +29,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/sonner";
 import { EmptyState } from "@/components/shared/empty-state";
 import { SubmitButton } from "@/components/shared/submit-button";
-import { deleteBanner, saveBanner } from "@/lib/actions/admin";
+import { deleteBanner, saveBanner, uploadBannerImage } from "@/lib/actions/admin";
 import { cn, formatCurrency, toNumber } from "@/lib/utils";
 import type { ActionResult, PromoBanner } from "@/types/database";
 
@@ -283,19 +284,7 @@ function BannerDialog({
               />
             </div>
 
-            <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="banner-image">
-                Image URL <span className="text-muted-foreground">(optional)</span>
-              </Label>
-              <Input
-                id="banner-image"
-                name="imageUrl"
-                type="url"
-                defaultValue={banner?.image_url ?? ""}
-                maxLength={500}
-                placeholder="https://…"
-              />
-            </div>
+            <ImageField defaultUrl={banner?.image_url ?? ""} error={err?.imageUrl?.[0]} />
 
             <div className="space-y-2 sm:col-span-2">
               <Label htmlFor="banner-gradient">Background</Label>
@@ -406,5 +395,79 @@ function BannerDialog({
         </form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+/** Uploads immediately and keeps the resulting URL in a hidden field. */
+function ImageField({ defaultUrl, error }: { defaultUrl: string; error?: string }) {
+  const [url, setUrl] = useState(defaultUrl);
+  const [uploading, setUploading] = useState(false);
+
+  async function onFile(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    const fd = new FormData();
+    fd.set("file", file);
+
+    const result = await uploadBannerImage(fd);
+    setUploading(false);
+
+    if (result.success && result.data) {
+      setUrl(result.data.url);
+      toast.success("Image uploaded. Save the banner to apply it.");
+    } else {
+      toast.error(result.error ?? "Upload failed.");
+      event.target.value = "";
+    }
+  }
+
+  return (
+    <div className="space-y-2 sm:col-span-2">
+      <Label htmlFor="banner-image">
+        Image <span className="text-muted-foreground">(optional)</span>
+      </Label>
+      <input type="hidden" name="imageUrl" value={url} />
+
+      <div className="flex items-center gap-3">
+        {url && (
+          <Image
+            src={url}
+            alt="Banner image"
+            width={64}
+            height={40}
+            unoptimized
+            className="h-10 w-16 shrink-0 rounded-lg border border-border/60 bg-secondary/40 object-cover"
+          />
+        )}
+        <Input
+          id="banner-image"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          onChange={onFile}
+          disabled={uploading}
+          className="text-xs"
+        />
+        {uploading && <Loader2 className="size-4 shrink-0 animate-spin" />}
+        {url && !uploading && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setUrl("")}
+            className="shrink-0"
+          >
+            Remove
+          </Button>
+        )}
+      </div>
+
+      <p className="text-xs text-muted-foreground">
+        JPG, PNG or WebP up to 4 MB. Sits behind the banner text — wide images work best. Leave
+        empty to use the background colour instead.
+      </p>
+      {error && <p className="text-xs text-red-400">{error}</p>}
+    </div>
   );
 }
