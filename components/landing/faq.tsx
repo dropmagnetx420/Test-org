@@ -16,7 +16,7 @@ const FAQS = [
   },
   {
     q: "How do deposits and withdrawals work?",
-    a: "Deposit on Robinhood Chain (ETH, USDG) or Ethereum (USDC, USDT, ETH). Send funds to the address shown, submit the transaction hash, and an admin confirms it on-chain before your balance updates. Withdrawals are reviewed the same way and paid to the address you provide.",
+    a: "Deposit on Robinhood Chain (ETH, USDG) or Ethereum (USDC, USDT, ETH). Send funds to the address shown and submit the transaction hash — once the transaction succeeds on the blockchain, the balance is added to your account. Withdrawals are paid to the address you provide.",
   },
   {
     q: "Do I need identity verification?",

@@ -184,7 +184,7 @@ export function DepositForm({ minDeposit, bonusPercent }: { minDeposit: string; 
             <p className="font-medium text-foreground">Before you send</p>
             <p>• Send only {asset} on {NETWORKS.find((n) => n.value === network)?.label}. Other assets are unrecoverable.</p>
             <p>• Minimum deposit is {formatCurrency(minDeposit)} USDG equivalent.</p>
-            <p>• Your balance updates after an admin confirms the transaction on-chain.</p>
+            <p>• Once the transaction succeeds on the blockchain, the balance is added to your account.</p>
           </div>
         </CardContent>
       </Card>

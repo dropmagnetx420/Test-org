@@ -112,7 +112,7 @@ export async function submitDeposit(
 
   return ok(
     data as DepositRequest,
-    "Deposit submitted. Your balance updates once an admin confirms the transaction."
+    "Deposit submitted. Once the transaction succeeds on the blockchain, the balance is added to your account."
   );
 }
 
