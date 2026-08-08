@@ -221,6 +221,8 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
                       role={user.role}
                       isSuperAdmin={admin.role === "super_admin"}
                       isSelf={admin.id === user.id}
+                      availableBalance={toNumber(wallet?.available_balance ?? 0)}
+                      bonusBalance={toNumber(wallet?.bonus_balance ?? 0)}
                     />
                   </CardContent>
                 </Card>

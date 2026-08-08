@@ -505,24 +505,38 @@ export async function adjustBalance(
 
   const parsed = parseOrFail(balanceAdjustSchema, {
     userId: formString(fd, "userId"),
+    mode: formString(fd, "mode"),
     amount: formNumber(fd, "amount"),
     isBonus: formBool(fd, "isBonus"),
     note: formString(fd, "note"),
   });
   if (!parsed.ok) return parsed.result;
 
+  const { userId, mode, amount, isBonus, note } = parsed.data;
   const supabase = await createClient();
-  const { error } = await supabase.rpc("adjust_user_balance", {
-    p_user_id: parsed.data.userId,
-    p_amount: parsed.data.amount,
-    p_is_bonus: parsed.data.isBonus,
-    p_note: parsed.data.note || null,
-  });
+
+  const { error } =
+    mode === "set"
+      ? await supabase.rpc("admin_set_user_balance", {
+          p_user_id: userId,
+          p_amount: amount,
+          p_is_bonus: isBonus,
+          p_note: note || null,
+        })
+      : await supabase.rpc("adjust_user_balance", {
+          p_user_id: userId,
+          p_amount: mode === "remove" ? -amount : amount,
+          p_is_bonus: isBonus,
+          p_note: note || null,
+        });
 
   if (error) return toActionError(error);
 
   revalidatePath("/admin/users");
-  return ok(null, "Balance adjusted.");
+  return ok(
+    null,
+    mode === "set" ? "Balance set." : mode === "remove" ? "Balance removed." : "Balance added."
+  );
 }
 
 export async function setUserRole(

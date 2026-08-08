@@ -231,12 +231,19 @@ export const userStatusSchema = z.object({
   until: z.string().trim().optional().or(z.literal("")),
 });
 
-export const balanceAdjustSchema = z.object({
-  userId: z.string().uuid(),
-  amount: z.number().refine((v) => v !== 0, "Enter a non-zero amount"),
-  isBonus: z.boolean().default(false),
-  note: z.string().trim().max(300).optional().or(z.literal("")),
-});
+// `set` accepts zero so an admin can empty a balance; add/remove cannot.
+export const balanceAdjustSchema = z
+  .object({
+    userId: z.string().uuid(),
+    mode: z.enum(["add", "remove", "set"]),
+    amount: z.number().min(0, "Enter an amount of zero or more").max(1_000_000),
+    isBonus: z.boolean().default(false),
+    note: z.string().trim().max(300).optional().or(z.literal("")),
+  })
+  .refine((d) => d.mode === "set" || d.amount > 0, {
+    message: "Enter an amount greater than zero",
+    path: ["amount"],
+  });
 
 export const siteSettingsSchema = z.object({
   siteName: z.string().trim().min(2).max(60),

@@ -45,6 +45,8 @@ interface UserActionsProps {
   role: UserRole;
   isSuperAdmin: boolean;
   isSelf: boolean;
+  availableBalance: number;
+  bonusBalance: number;
 }
 
 export function UserActions({
@@ -54,6 +56,8 @@ export function UserActions({
   role,
   isSuperAdmin,
   isSelf,
+  availableBalance,
+  bonusBalance,
 }: UserActionsProps) {
   const [panel, setPanel] = useState<Panel>(null);
   const [statusValue, setStatusValue] = useState<UserStatus>(status);
@@ -126,6 +130,8 @@ export function UserActions({
         onDone={() => setPanel(null)}
         userId={userId}
         name={name}
+        availableBalance={availableBalance}
+        bonusBalance={bonusBalance}
       />
       <RoleDialog
         open={panel === "role"}
@@ -259,41 +265,83 @@ function StatusDialog({
   );
 }
 
+type BalanceMode = "add" | "remove" | "set";
+
+const BALANCE_MODES: { value: BalanceMode; label: string; hint: string }[] = [
+  { value: "add", label: "Add", hint: "Credit this amount on top of the current balance." },
+  { value: "remove", label: "Remove", hint: "Debit this amount, stopping at zero." },
+  { value: "set", label: "Set", hint: "Replace the balance with this exact amount." },
+];
+
 function BalanceDialog({
   open,
   onDone,
   userId,
   name,
+  availableBalance,
+  bonusBalance,
 }: {
   open: boolean;
   onDone: () => void;
   userId: string;
   name: string;
+  availableBalance: number;
+  bonusBalance: number;
 }) {
   const { state, formAction } = useReviewAction(adjustBalance, onDone);
   const [amount, setAmount] = useState("");
+  const [mode, setMode] = useState<BalanceMode>("add");
+  const [isBonus, setIsBonus] = useState(false);
 
   const value = Number(amount);
-  const valid = Number.isFinite(value) && value !== 0;
+  const valid = Number.isFinite(value) && value >= 0 && (mode === "set" || value > 0);
+
+  const current = isBonus ? bonusBalance : availableBalance;
+  const next =
+    mode === "set" ? value : mode === "remove" ? Math.max(current - value, 0) : current + value;
 
   return (
-    <Dialog open={open} onOpenChange={(next) => !next && onDone()}>
+    <Dialog open={open} onOpenChange={(o) => !o && onDone()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Adjust balance</DialogTitle>
           <DialogDescription>
-            Credits and debits are written to the ledger and the user is notified. Use a negative
-            amount to deduct.
+            Every change is written to the ledger. Removing more than the balance leaves it at zero.
           </DialogDescription>
         </DialogHeader>
 
         <form action={formAction} className="space-y-4">
           <input type="hidden" name="userId" value={userId} />
+          <input type="hidden" name="mode" value={mode} />
 
-          <p className="rounded-lg border border-border/60 bg-secondary/30 p-3 text-xs">
-            <span className="text-muted-foreground">Account</span>{" "}
-            <span className="font-medium">{name}</span>
-          </p>
+          <div className="rounded-lg border border-border/60 bg-secondary/30 p-3 text-xs">
+            <p>
+              <span className="text-muted-foreground">Account</span>{" "}
+              <span className="font-medium">{name}</span>
+            </p>
+            <p className="mt-1 font-mono text-muted-foreground">
+              cash {availableBalance.toFixed(2)} · bonus {bonusBalance.toFixed(2)} USDG
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor={`mode-${userId}`}>Action</Label>
+            <Select value={mode} onValueChange={(v) => setMode(v as BalanceMode)}>
+              <SelectTrigger id={`mode-${userId}`} className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {BALANCE_MODES.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              {BALANCE_MODES.find((o) => o.value === mode)?.hint}
+            </p>
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor={`amount-${userId}`}>Amount (USDG)</Label>
@@ -302,8 +350,9 @@ function BalanceDialog({
               name="amount"
               type="number"
               step="0.01"
+              min="0"
               inputMode="decimal"
-              placeholder="e.g. 25 or -25"
+              placeholder="e.g. 25"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               className="font-mono"
@@ -311,11 +360,13 @@ function BalanceDialog({
             />
             {valid && (
               <p className="text-xs text-muted-foreground">
-                This will {value > 0 ? "credit" : "debit"}{" "}
+                {isBonus ? "Bonus" : "Cash"} balance goes from{" "}
                 <span className="font-mono font-medium text-foreground">
-                  {Math.abs(value).toFixed(2)} USDG
-                </span>
-                .
+                  {current.toFixed(2)}
+                </span>{" "}
+                to{" "}
+                <span className="font-mono font-medium text-foreground">{next.toFixed(2)}</span>{" "}
+                USDG.
               </p>
             )}
             {state?.fieldErrors?.amount && (
@@ -324,10 +375,17 @@ function BalanceDialog({
           </div>
 
           <div className="flex items-start gap-3 rounded-lg border border-border/60 bg-secondary/30 p-3">
-            <Checkbox id={`bonus-${userId}`} name="isBonus" value="true" className="mt-0.5" />
+            <Checkbox
+              id={`bonus-${userId}`}
+              name="isBonus"
+              value="true"
+              checked={isBonus}
+              onCheckedChange={(c) => setIsBonus(c === true)}
+              className="mt-0.5"
+            />
             <div className="space-y-0.5">
               <Label htmlFor={`bonus-${userId}`} className="cursor-pointer">
-                Credit as bonus
+                Apply to bonus balance
               </Label>
               <p className="text-xs text-muted-foreground">
                 Bonus funds carry a turnover requirement before they can be withdrawn.
@@ -356,7 +414,7 @@ function BalanceDialog({
               Cancel
             </Button>
             <SubmitButton variant="gradient" size="sm" pendingText="Working…" disabled={!valid}>
-              Apply adjustment
+              {mode === "set" ? "Set balance" : mode === "remove" ? "Remove funds" : "Add funds"}
             </SubmitButton>
           </DialogFooter>
         </form>

@@ -133,6 +133,7 @@ export interface Market {
   outcome_count: number;
   seed_volume: string;
   real_volume: string;
+  lifetime_volume: string;
   resolved_option_id: string | null;
 }
 
@@ -144,6 +145,7 @@ export interface MarketOption {
   volume: string;
   seed_volume: string;
   real_volume: string;
+  lifetime_volume: string;
   is_winner: boolean;
   is_active: boolean;
   position: number;

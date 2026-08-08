@@ -53,7 +53,8 @@ export function VolumeSeeder({
               <Label htmlFor={`seed-${option.id}`} className="text-sm">
                 {option.label}
                 <span className="ml-2 font-mono text-xs text-muted-foreground">
-                  real {formatCurrency(option.real_volume)}
+                  traded {formatCurrency(option.lifetime_volume)} · open{" "}
+                  {formatCurrency(option.real_volume)}
                 </span>
               </Label>
               <Input
