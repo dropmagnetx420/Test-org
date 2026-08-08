@@ -285,15 +285,19 @@ export async function listTaskSubmissions(
   const supabase = await createClient();
   const from = (page - 1) * pageSize;
 
-  const { data, count } = await supabase
+  const { data, count, error } = await supabase
     .from("task_submissions")
     .select(
-      "*,task:earn_tasks(id,title,type,target_url),user:profiles(id,email,username)",
+      // task_submissions points at profiles twice (user_id and reviewed_by), so
+      // the embed has to name the constraint or PostgREST refuses it.
+      "*,task:earn_tasks(id,title,type,target_url),user:profiles!task_submissions_user_id_fkey(id,email,username)",
       { count: "exact" }
     )
     .eq("status", status)
     .order("created_at", { ascending: status === "pending" })
     .range(from, from + pageSize - 1);
+
+  if (error) throw error;
 
   const total = count ?? 0;
   return {
