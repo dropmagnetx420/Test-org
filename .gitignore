@@ -44,3 +44,7 @@ next-env.d.ts
 # agent scratch
 /memory
 *.jsonl
+
+# Per-machine tool permissions. Records the literal commands that were approved,
+# so anything typed inline — tokens included — ends up in this file verbatim.
+.claude/settings.local.json
