@@ -1,7 +1,4 @@
-"use client";
-
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { Flame, TrendingUp, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Countdown } from "@/components/shared/countdown";
@@ -21,7 +18,7 @@ export function MarketCard({ market, compact = false }: { market: Market; compac
   const isLive = market.status === "open" && new Date(market.start_time) <= new Date();
 
   return (
-    <motion.div whileHover={{ y: -4 }} transition={{ type: "spring", stiffness: 300, damping: 22 }}>
+    <div className="lift h-full">
       <Link
         href={`/markets/${market.slug}`}
         className="group relative flex h-full flex-col gap-4 overflow-hidden rounded-xl border border-border/60 bg-card/60 p-5 backdrop-blur-xl transition-colors hover:border-primary/50"
@@ -135,6 +132,6 @@ export function MarketCard({ market, compact = false }: { market: Market; compac
           </div>
         </div>
       </Link>
-    </motion.div>
+    </div>
   );
 }

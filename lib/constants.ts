@@ -2,6 +2,19 @@ export const SITE_NAME = "NextGen Predict";
 export const SITE_DESCRIPTION =
   "Trade on the outcome of live sports events. Football, cricket, basketball, tennis and esports prediction markets.";
 
+/**
+ * Canonical origin, no trailing slash. Every absolute URL Google sees —
+ * canonicals, sitemap entries, OG tags, JSON-LD — is built from this.
+ *
+ * The fallback is production rather than localhost on purpose: if the env var
+ * is ever missing from a deploy, emitting the real domain is harmless, whereas
+ * emitting `localhost:3000` would poison every canonical tag in the index.
+ * Set NEXT_PUBLIC_SITE_URL locally to override.
+ */
+export const SITE_URL = (
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://nextgenpredict.com"
+).replace(/\/+$/, "");
+
 export const SPORTS = [
   { value: "football", label: "Football", icon: "⚽", gradient: "from-emerald-500 to-teal-500" },
   { value: "cricket", label: "Cricket", icon: "🏏", gradient: "from-amber-500 to-orange-500" },

@@ -19,6 +19,8 @@ export function Partners({ partners }: { partners: Partner[] }) {
             const inner = (
               <div className="glass flex h-full flex-col items-center justify-center gap-2 rounded-xl px-4 py-6 transition-colors hover:border-primary/40">
                 <div className="relative size-10 shrink-0">
+                  {/* Operators paste any logo URL, so the host is never in `remotePatterns`
+                      and the optimizer would 400. */}
                   <Image
                     src={partner.logo_url}
                     alt={partner.name}

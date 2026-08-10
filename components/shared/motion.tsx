@@ -1,18 +1,13 @@
-"use client";
+import type { CSSProperties, ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
-import { motion, type Variants } from "framer-motion";
-import type { ReactNode } from "react";
-
-export const fadeInUp: Variants = {
-  hidden: { opacity: 0, y: 22 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
-};
-
-export const staggerContainer: Variants = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
-};
-
+/**
+ * CSS-only entrance animations. These were framer-motion `whileInView`
+ * components, which forced every consumer into the client bundle and left
+ * content at opacity 0 until hydration — bad for LCP and for crawlers that
+ * never run the observer. The `reveal` keyframe animates from a visible-by-
+ * default stylesheet rule, so text is present in the initial HTML either way.
+ */
 export function FadeIn({
   children,
   delay = 0,
@@ -23,15 +18,9 @@ export function FadeIn({
   className?: string;
 }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 22 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration: 0.55, delay, ease: [0.16, 1, 0.3, 1] }}
-      className={className}
-    >
+    <div className={cn("reveal", className)} style={{ animationDelay: `${delay * 1000}ms` }}>
       {children}
-    </motion.div>
+    </div>
   );
 }
 
@@ -42,29 +31,21 @@ export function StaggerGrid({
   children: ReactNode;
   className?: string;
 }) {
-  return (
-    <motion.div
-      variants={staggerContainer}
-      initial="hidden"
-      whileInView="show"
-      viewport={{ once: true, margin: "-60px" }}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
+  return <div className={cn("stagger", className)}>{children}</div>;
 }
 
 export function StaggerItem({
   children,
   className,
+  style,
 }: {
   children: ReactNode;
   className?: string;
+  style?: CSSProperties;
 }) {
   return (
-    <motion.div variants={fadeInUp} className={className}>
+    <div className={cn("reveal", className)} style={style}>
       {children}
-    </motion.div>
+    </div>
   );
 }

@@ -338,21 +338,26 @@ function QueueCard({
   tone: string;
 }) {
   return (
-    <Link href={href}>
+    <Link href={href} className="group">
       <Card
         className={cn(
-          "glass transition-colors hover:border-primary/40",
+          "glass lift h-full transition-colors group-hover:border-primary/40",
           count > 0 && "border-primary/30"
         )}
       >
         <CardContent className="flex items-center gap-3 p-4">
-          <div className={cn("grid size-10 shrink-0 place-items-center rounded-lg", tone)}>
+          <div className={cn("grid size-10 shrink-0 place-items-center rounded-xl", tone)}>
             <Icon className="size-5" />
           </div>
           <div className="min-w-0">
             <p className="font-mono text-2xl font-semibold tabular-nums">{count}</p>
             <p className="truncate text-xs text-muted-foreground">{label}</p>
           </div>
+          {count > 0 && (
+            <span className="ml-auto shrink-0 text-xs font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">
+              Review
+            </span>
+          )}
         </CardContent>
       </Card>
     </Link>

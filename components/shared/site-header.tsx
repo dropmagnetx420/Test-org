@@ -1,15 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/shared/logo";
-import { UserMenu } from "@/components/shared/user-menu";
 import { SPORTS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
-import type { Profile, Wallet } from "@/types/database";
 
 const NAV = [
   { href: "/markets", label: "Markets" },
@@ -18,14 +16,18 @@ const NAV = [
   { href: "/markets?sport=esports", label: "Esports" },
 ];
 
+/**
+ * `account` and `mobileAuth` are server-rendered slots so this shell can paint
+ * before the caller's auth lookup resolves.
+ */
 export function SiteHeader({
-  profile,
-  wallet,
+  account,
+  mobileAuth,
   siteName,
   logoUrl,
 }: {
-  profile: Profile | null;
-  wallet: Wallet | null;
+  account: ReactNode;
+  mobileAuth?: ReactNode;
   siteName?: string;
   logoUrl?: string | null;
 }) {
@@ -55,18 +57,7 @@ export function SiteHeader({
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
-          {profile ? (
-            <UserMenu profile={profile} wallet={wallet} />
-          ) : (
-            <>
-              <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
-                <Link href="/login">Sign in</Link>
-              </Button>
-              <Button asChild variant="gradient" size="sm">
-                <Link href="/register">Get started</Link>
-              </Button>
-            </>
-          )}
+          {account}
 
           <Button
             variant="ghost"
@@ -101,15 +92,7 @@ export function SiteHeader({
               {sport.label}
             </Link>
           ))}
-          {!profile && (
-            <Link
-              href="/login"
-              onClick={() => setOpen(false)}
-              className="block rounded-md px-3 py-2 text-sm font-medium hover:bg-secondary/60"
-            >
-              Sign in
-            </Link>
-          )}
+          {mobileAuth}
         </div>
       )}
     </header>

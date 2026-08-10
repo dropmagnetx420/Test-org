@@ -90,9 +90,22 @@
   50%      { transform: translateY(-14px) }
 }
 
+/* Transform/opacity only — animating `filter: blur()` forces a repaint per frame. */
 @keyframes glow {
-  0%, 100% { opacity: 0.55; filter: blur(28px) }
-  50%      { opacity: 1;    filter: blur(38px) }
+  0%, 100% { opacity: 0.55; transform: scale(1) }
+  50%      { opacity: 0.95; transform: scale(1.12) }
+}
+
+@keyframes aurora-drift {
+  0%   { transform: translate3d(-6%, -3%, 0) scale(1.05) }
+  50%  { transform: translate3d(6%, 4%, 0) scale(1.18) }
+  100% { transform: translate3d(-6%, -3%, 0) scale(1.05) }
+}
+
+@keyframes sheen {
+  0%   { transform: translateX(-120%) skewX(-18deg) }
+  55%  { transform: translateX(220%) skewX(-18deg) }
+  100% { transform: translateX(220%) skewX(-18deg) }
 }
 
 @keyframes shimmer {
@@ -164,6 +177,19 @@
 }
 
 @layer utilities {
+  /**
+   * Static radial mesh, drifted with a single GPU-composited transform. Replaces
+   * three separately animated blur-[130px] layers plus a particle canvas.
+   */
+  .aurora {
+    background-image:
+      radial-gradient(42rem 30rem at 12% 8%,  hsl(268 90% 60% / 0.30), transparent 60%),
+      radial-gradient(38rem 28rem at 88% 22%, hsl(190 95% 55% / 0.22), transparent 62%),
+      radial-gradient(34rem 26rem at 42% 96%, hsl(310 90% 62% / 0.20), transparent 60%);
+    animation: aurora-drift 26s ease-in-out infinite;
+    will-change: transform;
+  }
+
   .glass {
     background: hsl(var(--card) / 0.55);
     backdrop-filter: blur(18px) saturate(160%);
@@ -228,6 +254,47 @@
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none }
 
   .safe-bottom { padding-bottom: env(safe-area-inset-bottom) }
+  .safe-x {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  /** Light sweep across a promo surface. Pseudo-element so it never takes layout. */
+  .sheen::after {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    inline-size: 45%;
+    background: linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.13), transparent);
+    animation: sheen 5.5s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  /** Rises into place without ever painting at opacity 0 for search crawlers. */
+  .reveal {
+    animation: slide-up 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  /* Staggers direct children so a grid cascades in without per-item JS. */
+  .stagger > *:nth-child(1) { animation-delay: 0ms }
+  .stagger > *:nth-child(2) { animation-delay: 55ms }
+  .stagger > *:nth-child(3) { animation-delay: 110ms }
+  .stagger > *:nth-child(4) { animation-delay: 165ms }
+  .stagger > *:nth-child(5) { animation-delay: 220ms }
+  .stagger > *:nth-child(6) { animation-delay: 275ms }
+  .stagger > *:nth-child(7) { animation-delay: 330ms }
+  .stagger > *:nth-child(n + 8) { animation-delay: 385ms }
+
+  .lift {
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+  }
+  @media (hover: hover) {
+    .lift:hover { transform: translateY(-4px) }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora, .sheen::after { animation: none !important }
 }
 
 @media (prefers-reduced-motion: reduce) {

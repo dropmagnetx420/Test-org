@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { Flame, Radio } from "lucide-react";
 import { Hero } from "@/components/landing/hero";
 import { SportsNav } from "@/components/landing/sports-nav";
@@ -7,9 +8,14 @@ import { Stats } from "@/components/landing/stats";
 import { Faq } from "@/components/landing/faq";
 import { Partners } from "@/components/landing/partners";
 import { Skeleton } from "@/components/ui/skeleton";
+import { JsonLd, organizationSchema, websiteSchema } from "@/components/shared/json-ld";
 import { getLiveMarkets, getPartners, getPublicStats, getTrendingMarkets } from "@/lib/queries";
 
 export const revalidate = 30;
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 function MarketGridSkeleton() {
   return (
@@ -65,6 +71,9 @@ export default async function HomePage() {
 
   return (
     <>
+      <JsonLd data={organizationSchema} />
+      <JsonLd data={websiteSchema} />
+
       <Hero
         totalVolume={stats.totalVolume}
         openMarkets={stats.openMarkets}

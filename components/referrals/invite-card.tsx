@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CopyButton } from "@/components/shared/copy-button";
 import { toast } from "@/components/ui/sonner";
+import { SITE_URL } from "@/lib/constants";
 
 export function InviteCard({ code, commission }: { code: string; commission: string }) {
-  const link = `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/register?ref=${code}`;
+  const link = `${SITE_URL}/register?ref=${code}`;
 
   async function share() {
     const text = `Predict sports outcomes with me on NextGen Predict. Sign up with my link and we both earn.`;

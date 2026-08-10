@@ -1,5 +1,6 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { FadeIn } from "@/components/shared/motion";
+import { JsonLd, faqSchema } from "@/components/shared/json-ld";
 
 const FAQS = [
   {
@@ -39,6 +40,7 @@ const FAQS = [
 export function Faq() {
   return (
     <section id="faq" className="px-4 py-16 sm:px-6 lg:px-8">
+      <JsonLd data={faqSchema(FAQS.map((faq) => ({ question: faq.q, answer: faq.a })))} />
       <div className="mx-auto max-w-3xl">
         <FadeIn>
           <div className="mb-10 text-center">

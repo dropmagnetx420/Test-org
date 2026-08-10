@@ -3,15 +3,14 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { Gift, Sparkles, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Gift, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
 import { claimPromo } from "@/lib/actions/notifications";
 import { cn, toNumber } from "@/lib/utils";
 import type { PromoBanner } from "@/types/database";
 
-const SLIDE_MS = 5000;
+const SLIDE_MS = 6000;
 const SWIPE_PX = 50;
 
 export function PromoBanners({
@@ -78,153 +77,243 @@ export function PromoBanners({
     });
   }
 
+  const step = (delta: number) => setIndex((i) => (i + delta + count) % count);
+
   return (
-    <div
-      className="relative"
+    <section
+      aria-label="Promotions"
+      aria-roledescription="carousel"
+      className="group/promo relative"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      <button
-        type="button"
-        onClick={() => setHidden(true)}
-        className="absolute right-2 top-2 z-30 rounded-md bg-black/30 p-1 text-white/70 backdrop-blur-sm transition-colors hover:bg-black/50 hover:text-white"
-        aria-label="Hide offers"
-      >
-        <X className="size-4" />
-      </button>
-
-      <div
-        className="touch-pan-y overflow-hidden rounded-xl border border-border/60"
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
-        onClickCapture={onClickCapture}
-      >
-        <motion.div
-          className="flex"
-          animate={{ x: `-${index * 100}%` }}
-          transition={{ type: "spring", stiffness: 260, damping: 32 }}
+      <div className="border-gradient sheen relative overflow-hidden rounded-2xl bg-card/40 shadow-[0_8px_40px_-16px_hsl(var(--primary)/0.55)] backdrop-blur-xl">
+        <div
+          className="touch-pan-y"
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerUp}
+          onClickCapture={onClickCapture}
         >
-          {banners.map((banner) => {
-            const bonus = toNumber(banner.bonus_amount);
-            const seatsLeft =
-              banner.user_limit != null
-                ? Math.max(0, banner.user_limit - banner.claimed_count)
-                : null;
-            const isClaimed = claimed.includes(banner.id);
-            const isClaimable = bonus > 0 && isAuthenticated;
-
-            return (
-              <div
+          <div
+            className="flex items-stretch transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
+            style={{ transform: `translate3d(-${index * 100}%, 0, 0)` }}
+          >
+            {banners.map((banner, i) => (
+              <Slide
                 key={banner.id}
-                className={cn(
-                  "relative h-28 w-full shrink-0 overflow-hidden sm:h-36",
-                  banner.image_url
-                    ? "bg-secondary"
-                    : cn(
-                        "bg-gradient-to-r",
-                        banner.bg_gradient || "from-primary/20 via-violet-500/10 to-cyan-500/20"
-                      )
-                )}
-              >
-                {banner.image_url && (
-                  <>
-                    <Image
-                      src={banner.image_url}
-                      alt=""
-                      fill
-                      unoptimized
-                      sizes="100vw"
-                      className="select-none object-cover"
-                      draggable={false}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/50 to-black/20" />
-                  </>
-                )}
+                banner={banner}
+                eager={i === 0}
+                hidden={i !== index}
+                isAuthenticated={isAuthenticated}
+                isClaimed={claimed.includes(banner.id)}
+                pending={pending}
+                onClaim={onClaim}
+              />
+            ))}
+          </div>
+        </div>
 
-                {banner.link_url && !isClaimable && (
-                  <Link
-                    href={banner.link_url}
-                    className="absolute inset-0 z-10"
-                    aria-label={banner.title}
-                  />
-                )}
+        <button
+          type="button"
+          onClick={() => setHidden(true)}
+          aria-label="Hide offers"
+          className="absolute end-2 top-2 z-30 grid size-7 place-items-center rounded-full bg-black/35 text-white/70 backdrop-blur-md transition-colors hover:bg-black/60 hover:text-white"
+        >
+          <X className="size-3.5" />
+        </button>
 
-                <div className="relative flex h-full items-center gap-3 px-4 pr-12 sm:gap-4 sm:px-6">
-                  <div
-                    className={cn(
-                      "hidden size-11 shrink-0 place-items-center rounded-xl bg-white/10 sm:grid",
-                      banner.image_url ? "text-white" : "text-primary"
-                    )}
-                  >
-                    <Gift className="size-5" />
-                  </div>
-
-                  <div className={cn("min-w-0 flex-1", banner.image_url && "text-white")}>
-                    <p className="truncate font-semibold sm:text-lg">{banner.title}</p>
-                    {banner.subtitle && (
-                      <p
-                        className={cn(
-                          "mt-0.5 line-clamp-2 text-xs sm:text-sm",
-                          banner.image_url ? "text-white/75" : "text-muted-foreground"
-                        )}
-                      >
-                        {banner.subtitle}
-                      </p>
-                    )}
-                    {seatsLeft !== null && (
-                      <p className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-amber-300">
-                        <Sparkles className="size-3" />
-                        {seatsLeft > 0 ? `${seatsLeft.toLocaleString()} spots left` : "Fully claimed"}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="relative z-20 shrink-0">
-                    {isClaimable ? (
-                      <Button
-                        variant="gradient"
-                        size="sm"
-                        disabled={pending || isClaimed || seatsLeft === 0}
-                        onClick={() => onClaim(banner)}
-                      >
-                        {isClaimed ? "Claimed" : (banner.cta_text ?? `Claim ${bonus} USDG`)}
-                      </Button>
-                    ) : bonus > 0 ? (
-                      <Button asChild variant="gradient" size="sm">
-                        <Link href="/register">{banner.cta_text ?? "Sign up to claim"}</Link>
-                      </Button>
-                    ) : banner.link_url ? (
-                      <Button asChild variant="glass" size="sm">
-                        <Link href={banner.link_url}>{banner.cta_text ?? "Learn more"}</Link>
-                      </Button>
-                    ) : null}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </motion.div>
+        {count > 1 && (
+          <>
+            <CarouselArrow side="start" onClick={() => step(-1)} />
+            <CarouselArrow side="end" onClick={() => step(1)} />
+          </>
+        )}
       </div>
 
       {count > 1 && (
-        <div className="mt-2 flex justify-center gap-1.5">
+        <div className="mt-2.5 flex justify-center gap-1.5">
           {banners.map((banner, i) => (
             <button
               key={banner.id}
               type="button"
               onClick={() => setIndex(i)}
-              aria-label={`Show offer ${i + 1}`}
+              aria-label={`Show offer ${i + 1} of ${count}`}
               aria-current={i === index}
               className={cn(
-                "h-1.5 rounded-full transition-all",
-                i === index ? "w-5 bg-primary" : "w-1.5 bg-border hover:bg-muted-foreground"
+                "h-1.5 rounded-full transition-all duration-300",
+                i === index
+                  ? "w-6 bg-gradient-to-r from-violet-500 to-cyan-400"
+                  : "w-1.5 bg-border hover:bg-muted-foreground"
               )}
             />
           ))}
         </div>
       )}
-    </div>
+    </section>
+  );
+}
+
+function CarouselArrow({ side, onClick }: { side: "start" | "end"; onClick: () => void }) {
+  const Icon = side === "start" ? ChevronLeft : ChevronRight;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={side === "start" ? "Previous offer" : "Next offer"}
+      className={cn(
+        // Touch devices swipe instead; showing arrows there would crowd the card.
+        "absolute top-1/2 z-30 hidden size-9 -translate-y-1/2 place-items-center rounded-full bg-black/35 text-white/80 opacity-0 backdrop-blur-md transition-all hover:bg-black/60 hover:text-white focus-visible:opacity-100 group-hover/promo:opacity-100 lg:grid",
+        side === "start" ? "start-2" : "end-2"
+      )}
+    >
+      <Icon className="size-4" />
+    </button>
+  );
+}
+
+function Slide({
+  banner,
+  eager,
+  hidden,
+  isAuthenticated,
+  isClaimed,
+  pending,
+  onClaim,
+}: {
+  banner: PromoBanner;
+  eager: boolean;
+  hidden: boolean;
+  isAuthenticated: boolean;
+  isClaimed: boolean;
+  pending: boolean;
+  onClaim: (banner: PromoBanner) => void;
+}) {
+  const bonus = toNumber(banner.bonus_amount);
+  const seatsLeft =
+    banner.user_limit != null ? Math.max(0, banner.user_limit - banner.claimed_count) : null;
+  const soldOut = seatsLeft === 0;
+  const isClaimable = bonus > 0 && isAuthenticated;
+  const takenPct =
+    banner.user_limit && banner.user_limit > 0
+      ? Math.min(100, Math.round((banner.claimed_count / banner.user_limit) * 100))
+      : null;
+  const onImage = Boolean(banner.image_url);
+
+  return (
+    <article
+      aria-hidden={hidden}
+      aria-label={banner.title}
+      className={cn(
+        "relative w-full shrink-0 overflow-hidden",
+        onImage
+          ? "bg-secondary"
+          : cn(
+              "bg-gradient-to-br",
+              banner.bg_gradient || "from-violet-600/25 via-fuchsia-600/10 to-cyan-500/25"
+            )
+      )}
+    >
+      {banner.image_url && (
+        <>
+          <Image
+            src={banner.image_url}
+            alt=""
+            fill
+            quality={82}
+            loading={eager ? "eager" : "lazy"}
+            sizes="(max-width: 1280px) 100vw, 1280px"
+            className="select-none object-cover"
+            draggable={false}
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/25" />
+        </>
+      )}
+
+      {banner.link_url && !isClaimable && (
+        <Link href={banner.link_url} className="absolute inset-0 z-10" aria-label={banner.title} />
+      )}
+
+      {/* Stacks on phones so nothing truncates; becomes a wide row from `sm`. */}
+      <div
+        className={cn(
+          "relative flex min-h-[7.5rem] flex-col gap-3 p-4 pe-11 sm:min-h-[9rem] sm:flex-row sm:items-center sm:gap-5 sm:p-6 sm:pe-14",
+          onImage && "text-white"
+        )}
+      >
+        <div
+          className={cn(
+            "hidden size-12 shrink-0 place-items-center rounded-2xl border border-white/15 bg-white/10 shadow-inner backdrop-blur-sm sm:grid",
+            onImage ? "text-white" : "text-primary"
+          )}
+        >
+          <Gift className="size-5" />
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <h3 className="text-pretty text-[15px] font-bold leading-snug tracking-tight sm:text-xl">
+            {banner.title}
+          </h3>
+
+          {banner.subtitle && (
+            <p
+              className={cn(
+                "mt-1 line-clamp-2 text-pretty text-xs leading-relaxed sm:text-sm",
+                onImage ? "text-white/75" : "text-muted-foreground"
+              )}
+            >
+              {banner.subtitle}
+            </p>
+          )}
+
+          {seatsLeft !== null && (
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <span
+                className={cn(
+                  "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold",
+                  soldOut
+                    ? "border-white/15 bg-white/10 text-muted-foreground"
+                    : "border-amber-400/30 bg-amber-400/15 text-amber-300"
+                )}
+              >
+                <Sparkles className="size-3" />
+                {soldOut ? "Fully claimed" : `${seatsLeft.toLocaleString()} spots left`}
+              </span>
+
+              {takenPct !== null && !soldOut && (
+                <span className="h-1.5 w-20 overflow-hidden rounded-full bg-white/15">
+                  <span
+                    className="block h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500"
+                    style={{ width: `${takenPct}%` }}
+                  />
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="relative z-20 shrink-0">
+          {isClaimable ? (
+            <Button
+              variant="gradient"
+              disabled={pending || isClaimed || soldOut}
+              onClick={() => onClaim(banner)}
+              className="w-full sm:w-auto"
+            >
+              {isClaimed ? "Claimed" : (banner.cta_text ?? `Claim ${bonus} USDG`)}
+            </Button>
+          ) : bonus > 0 ? (
+            <Button asChild variant="gradient" className="w-full sm:w-auto">
+              <Link href="/register">{banner.cta_text ?? "Sign up to claim"}</Link>
+            </Button>
+          ) : banner.link_url ? (
+            <Button asChild variant="glass" className="w-full sm:w-auto">
+              <Link href={banner.link_url}>{banner.cta_text ?? "Learn more"}</Link>
+            </Button>
+          ) : null}
+        </div>
+      </div>
+    </article>
   );
 }

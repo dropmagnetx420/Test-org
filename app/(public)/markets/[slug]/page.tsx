@@ -14,7 +14,7 @@ import { AdSlot } from "@/components/shared/ad-slot";
 import { createClient } from "@/lib/supabase/server";
 import { getUser, getWallet, getSettings } from "@/lib/auth";
 import { getMarketBySlug, getMarketOptions } from "@/lib/queries";
-import { SPORTS } from "@/lib/constants";
+import { SPORTS, SITE_NAME } from "@/lib/constants";
 import { cn, formatCurrency, formatCompact, toNumber } from "@/lib/utils";
 import type { Trade } from "@/types/database";
 
@@ -40,12 +40,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const market = await getMarketBySlug(slug);
   if (!market) return { title: "Market not found" };
 
+  const description =
+    market.description ??
+    `Trade ${market.yes_label} or ${market.no_label} on ${market.title} at ${SITE_NAME}.`;
+
   return {
     title: market.title,
-    description:
-      market.description ??
-      `Trade ${market.yes_label} or ${market.no_label} on ${market.title} at NextGen Predict.`,
-    openGraph: { title: market.title, description: market.description ?? undefined },
+    description,
+    alternates: { canonical: `/markets/${market.slug}` },
+    openGraph: {
+      type: "article",
+      title: market.title,
+      description,
+      url: `/markets/${market.slug}`,
+    },
   };
 }
 

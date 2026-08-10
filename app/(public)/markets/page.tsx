@@ -11,18 +11,49 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { listMarkets } from "@/lib/queries";
 import { SPORTS } from "@/lib/constants";
 
-export const metadata: Metadata = {
-  title: "Markets",
-  description:
-    "Browse every open sports prediction market — football, cricket, basketball, tennis and esports.",
-};
-
 interface PageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
 function first(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
+}
+
+/**
+ * Sport filters get their own title and canonical so they can rank on their
+ * own terms. `sort` and `status` only reorder the same set, so they collapse
+ * onto the unfiltered URL, and free-text search is an unbounded URL space that
+ * should never enter the index at all.
+ */
+export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+  const params = await searchParams;
+  const search = first(params.search);
+  const sportValue = first(params.sport);
+  const sport = SPORTS.find((entry) => entry.value === sportValue);
+  const page = Number(first(params.page) ?? 1) || 1;
+
+  if (search) {
+    return { title: `Search: ${search}`, robots: { index: false, follow: true } };
+  }
+
+  const canonical = `/markets${sport ? `?sport=${sport.value}` : ""}${
+    page > 1 ? `${sport ? "&" : "?"}page=${page}` : ""
+  }`;
+
+  const title = sport
+    ? `${sport.label} prediction markets${page > 1 ? ` — page ${page}` : ""}`
+    : `Markets${page > 1 ? ` — page ${page}` : ""}`;
+
+  const description = sport
+    ? `Live ${sport.label.toLowerCase()} prediction markets. Buy YES or NO on match outcomes and settle the moment the result is in.`
+    : "Browse every open sports prediction market — football, cricket, basketball, tennis and esports.";
+
+  return {
+    title,
+    description,
+    alternates: { canonical },
+    openGraph: { title, description, url: canonical },
+  };
 }
 
 async function MarketResults({

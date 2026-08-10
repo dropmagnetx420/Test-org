@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { AnimatedBackground } from "@/components/shared/animated-background";
-import { SITE_NAME, SITE_DESCRIPTION } from "@/lib/constants";
+import { SITE_NAME, SITE_DESCRIPTION, SITE_URL } from "@/lib/constants";
 import "./globals.css";
 
 const inter = Inter({
@@ -18,12 +18,16 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(SITE_URL),
+  // Every page inherits this and overrides it with its own path; without it
+  // query-string variants of a route each get indexed as a separate page.
+  alternates: { canonical: "/" },
   title: {
     default: `${SITE_NAME} — Sports Prediction Markets`,
     template: `%s · ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
   keywords: [
     "prediction market",
     "sports predictions",
@@ -35,7 +39,9 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     type: "website",
+    url: "/",
     siteName: SITE_NAME,
+    locale: "en_US",
     title: `${SITE_NAME} — Sports Prediction Markets`,
     description: SITE_DESCRIPTION,
   },
@@ -44,7 +50,11 @@ export const metadata: Metadata = {
     title: `${SITE_NAME} — Sports Prediction Markets`,
     description: SITE_DESCRIPTION,
   },
-  robots: { index: true, follow: true },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 },
+  },
 };
 
 export const viewport: Viewport = {

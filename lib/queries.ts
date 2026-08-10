@@ -91,8 +91,10 @@ export interface PublicStats {
 }
 
 /**
- * Aggregate figures for the landing page. Uses the service-role client because
- * `profiles` is not readable by anonymous visitors — only counts are exposed.
+ * Aggregate figures for the landing page. `public_stats()` is security definer
+ * because `profiles` is not readable by anonymous visitors — only counts leave
+ * the function. Aggregating in SQL keeps this off the markets table scan it
+ * used to do on every request.
  */
 export const getPublicStats = cache(async (): Promise<PublicStats> => {
   const empty: PublicStats = {
@@ -106,30 +108,26 @@ export const getPublicStats = cache(async (): Promise<PublicStats> => {
 
   try {
     const admin = createAdminClient();
+    const { data, error } = await admin.rpc("public_stats");
+    if (error || !data) return empty;
 
-    const [marketRows, userCount, tradeCount] = await Promise.all([
-      admin.from("markets").select("sport,status,total_volume,trade_count"),
-      admin.from("profiles").select("id", { count: "exact", head: true }),
-      admin.from("trades").select("id", { count: "exact", head: true }),
-    ]);
+    const row = data as {
+      total_volume: string | number;
+      total_trades: number;
+      total_users: number;
+      open_markets: number;
+      resolved_markets: number;
+      sport_counts: Record<string, number>;
+    };
 
-    const rows =
-      (marketRows.data as { sport: string; status: string; total_volume: string; trade_count: number }[]) ??
-      [];
-
-    const stats = { ...empty, sportCounts: {} as Record<string, number> };
-    for (const row of rows) {
-      stats.totalVolume += Number(row.total_volume ?? 0);
-      if (row.status === "open") {
-        stats.openMarkets += 1;
-        stats.sportCounts[row.sport] = (stats.sportCounts[row.sport] ?? 0) + 1;
-      }
-      if (row.status === "resolved") stats.resolvedMarkets += 1;
-    }
-
-    stats.totalUsers = userCount.count ?? 0;
-    stats.totalTrades = tradeCount.count ?? 0;
-    return stats;
+    return {
+      totalVolume: Number(row.total_volume ?? 0),
+      totalTrades: row.total_trades ?? 0,
+      totalUsers: row.total_users ?? 0,
+      openMarkets: row.open_markets ?? 0,
+      resolvedMarkets: row.resolved_markets ?? 0,
+      sportCounts: row.sport_counts ?? {},
+    };
   } catch {
     return empty;
   }

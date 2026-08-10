@@ -1,7 +1,8 @@
 import { Suspense } from "react";
-import { requireProfile, getWallet, getSettings, isAdminRole } from "@/lib/auth";
+import { requireProfile, getSettings, isAdminRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { SiteHeader } from "@/components/shared/site-header";
+import { HeaderAccount } from "@/components/shared/header-account";
 import { SiteFooter } from "@/components/shared/site-footer";
 import { MaintenanceNotice } from "@/components/shared/maintenance-notice";
 import { AdSlot } from "@/components/shared/ad-slot";
@@ -10,7 +11,7 @@ import { DashboardNav } from "@/components/dashboard/dashboard-nav";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const profile = await requireProfile();
-  const [wallet, settings] = await Promise.all([getWallet(), getSettings()]);
+  const settings = await getSettings();
 
   if (settings.maintenance_mode && !isAdminRole(profile.role)) {
     return <MaintenanceNotice settings={settings} />;
@@ -26,10 +27,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <>
       <SiteHeader
-        profile={profile}
-        wallet={wallet}
         siteName={settings.site_name}
         logoUrl={settings.logo_url}
+        account={<HeaderAccount />}
       />
       <Suspense fallback={null}>
         <PromoBar className="mx-auto mt-4 w-full max-w-7xl px-4 sm:px-6 lg:px-8" />
