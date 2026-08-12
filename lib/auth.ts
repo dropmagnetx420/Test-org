@@ -3,11 +3,56 @@ import { cache } from "react";
 import { unstable_cache } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { createClient, createAdminClient, createPublicClient } from "@/lib/supabase/server";
+import {
+  createClient,
+  createAdminClient,
+  createPublicClient,
+  isSupabaseConfigured,
+} from "@/lib/supabase/server";
 import type { Profile, Wallet, SiteSettings } from "@/types/database";
 import { CACHE_TAGS, RATE_LIMITS } from "@/lib/constants";
 
+/**
+ * Sensible defaults so the public site renders when the Supabase integration
+ * is not connected. Admin-managed values fall back to launch-time settings.
+ */
+const FALLBACK_SETTINGS: SiteSettings = {
+  id: 1,
+  site_name: "NextGen Predict",
+  site_tagline: "Predict. Trade. Win.",
+  logo_url: null,
+  support_email: null,
+  twitter_url: null,
+  telegram_url: null,
+  discord_url: null,
+  trade_fee_percent: "2",
+  trade_fee_min: "1",
+  trade_fee_max: "50",
+  cancel_fee_min: "1",
+  cancel_fee_max: "25",
+  min_deposit: "100",
+  min_withdrawal: "200",
+  withdrawal_fee_percent: "2",
+  welcome_bonus: "50",
+  deposit_bonus_percent: "0",
+  first_deposit_bonus_percent: "10",
+  first_deposit_bonus_max: "500",
+  bonus_turnover_multiplier: "3",
+  referral_commission_percent: "5",
+  kyc_required_for_withdrawal: true,
+  maintenance_mode: false,
+  registration_enabled: true,
+  ads_enabled: true,
+  ad_reward: "1",
+  ad_watch_seconds: 15,
+  ad_daily_limit: 10,
+  earn_tasks_enabled: true,
+  task_reward_is_bonus: true,
+  updated_at: new Date(0).toISOString(),
+};
+
 export const getUser = cache(async () => {
+  if (!isSupabaseConfigured) return null;
   const supabase = await createClient();
   const {
     data: { user },
@@ -43,9 +88,10 @@ export const getWallet = cache(async (): Promise<Wallet | null> => {
 export const getSettings = cache(
   unstable_cache(
     async (): Promise<SiteSettings> => {
+      if (!isSupabaseConfigured) return FALLBACK_SETTINGS;
       const supabase = createPublicClient();
       const { data } = await supabase.from("site_settings").select("*").eq("id", 1).single();
-      return data as SiteSettings;
+      return (data as SiteSettings) ?? FALLBACK_SETTINGS;
     },
     ["site-settings"],
     { revalidate: 300, tags: [CACHE_TAGS.SETTINGS] }

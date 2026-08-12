@@ -1,6 +1,15 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
+/**
+ * True when the Supabase env vars exist. Callers use this to degrade to
+ * fallback data (empty lists, default settings) instead of crashing the whole
+ * site when the integration has not been connected yet.
+ */
+export const isSupabaseConfigured = Boolean(
+  process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
+
 export async function createClient() {
   const cookieStore = await cookies();
 

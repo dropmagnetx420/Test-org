@@ -1,7 +1,12 @@
 import "server-only";
 import { cache } from "react";
 import { unstable_cache } from "next/cache";
-import { createClient, createAdminClient, createPublicClient } from "@/lib/supabase/server";
+import {
+  createClient,
+  createAdminClient,
+  createPublicClient,
+  isSupabaseConfigured,
+} from "@/lib/supabase/server";
 import { CACHE_TAGS, DEFAULTS } from "@/lib/constants";
 import type {
   AdPlacementConfig,
