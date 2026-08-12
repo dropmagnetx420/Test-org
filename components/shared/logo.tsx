@@ -2,8 +2,9 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 /**
- * The emblem crop, not the full seal: the wordmark inside the seal is illegible
- * below ~64px and would compete with the `siteName` text rendered beside it.
+ * The full brand seal (compass + wordmark). It is circular art on black, so it
+ * renders cleanly as a coin-style badge at header sizes; the `siteName` text
+ * beside it carries legibility at small sizes.
  *
  * Referenced by path rather than statically imported — a static import makes
  * webpack generate a blur placeholder through `sharp`, which has no native
@@ -13,9 +14,9 @@ import { cn } from "@/lib/utils";
  * every deployment carried a stale override in `site_settings.logo_url` that
  * silently beat the shipped art.
  */
-const BRAND_MARK = "/logo-mark.png";
+const BRAND_MARK = "/logo.png";
 
-/** First word is gradient-filled, the rest plain — matches the original mark. */
+/** First word is gold-gradient-filled, the rest plain — matches the seal. */
 function splitName(name: string): [string, string] {
   const trimmed = name.trim();
   const space = trimmed.indexOf(" ");
@@ -43,23 +44,29 @@ export function Logo({
 
   return (
     <div className={cn("flex items-center gap-2.5", className)}>
-      <Image
-        src={BRAND_MARK}
-        alt={siteName}
-        width={dims.px}
-        height={dims.px}
-        quality={82}
-        priority
-        className={cn(
-          "shrink-0 rounded-full object-contain ring-1 ring-inset ring-amber-500/25",
-          dims.box
-        )}
-      />
+      <span className={cn("logo-halo grid shrink-0 place-items-center", dims.box)}>
+        <Image
+          src={BRAND_MARK}
+          alt={siteName}
+          width={dims.px}
+          height={dims.px}
+          quality={82}
+          priority
+          className={cn(
+            "relative rounded-full object-contain",
+            "ring-1 ring-inset ring-amber-400/40",
+            "drop-shadow-[0_2px_8px_rgba(217,119,6,0.45)]",
+            dims.box
+          )}
+        />
+      </span>
 
       {showText && (
         <span className={cn("font-bold tracking-tight leading-none", dims.text)}>
-          <span className="text-gradient">{first}</span>
-          {rest && <span className="text-foreground">{rest}</span>}
+          <span className="text-gradient-gold drop-shadow-[0_1px_4px_rgba(217,119,6,0.35)]">
+            {first}
+          </span>
+          {rest && <span className="text-foreground/90">{rest}</span>}
         </span>
       )}
     </div>

@@ -232,6 +232,67 @@
     pointer-events: none;
   }
 
+  /** Copper/gold gradient matched to the brand seal's lettering. */
+  .text-gradient-gold {
+    background: linear-gradient(115deg,
+      hsl(28 85% 62%), hsl(42 95% 68%), hsl(20 75% 55%), hsl(38 90% 65%));
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradient 8s ease infinite;
+  }
+
+  /** Warm halo that sits behind the brand seal so it reads as lit metal. */
+  .logo-halo {
+    position: relative;
+  }
+  .logo-halo::before {
+    content: "";
+    position: absolute;
+    inset: -18%;
+    border-radius: 9999px;
+    background: radial-gradient(circle,
+      hsl(35 95% 58% / 0.45) 0%, hsl(25 90% 50% / 0.18) 45%, transparent 70%);
+    animation: glow 3.5s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  /** Layered depth shadow — reads as a raised 3D surface on dark UI. */
+  .shadow-3d {
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.06) inset,
+      0 -1px 0 hsl(0 0% 0% / 0.4) inset,
+      0 4px 8px -2px hsl(0 0% 0% / 0.45),
+      0 12px 28px -8px hsl(0 0% 0% / 0.55),
+      0 24px 60px -18px hsl(var(--primary) / 0.35);
+  }
+
+  .shadow-3d-gold {
+    box-shadow:
+      0 1px 0 hsl(45 90% 70% / 0.12) inset,
+      0 -1px 0 hsl(0 0% 0% / 0.4) inset,
+      0 4px 10px -2px hsl(0 0% 0% / 0.5),
+      0 14px 34px -10px hsl(30 90% 45% / 0.35);
+  }
+
+  /** Perspective tilt-lift for cards: GPU transform only, hover devices only. */
+  .card-3d {
+    transform-style: preserve-3d;
+    transition:
+      transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 0.35s ease,
+      box-shadow 0.35s ease;
+  }
+  @media (hover: hover) {
+    .card-3d:hover {
+      transform: perspective(900px) translateY(-6px) rotateX(2.5deg) scale(1.015);
+      box-shadow:
+        0 18px 44px -14px hsl(0 0% 0% / 0.6),
+        0 8px 20px -8px hsl(30 90% 50% / 0.28);
+    }
+  }
+
   .glow-primary { box-shadow: 0 0 34px -8px hsl(var(--primary) / 0.65) }
   .glow-accent  { box-shadow: 0 0 34px -8px hsl(var(--accent) / 0.65) }
   .glow-success { box-shadow: 0 0 34px -8px hsl(var(--success) / 0.65) }

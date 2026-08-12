@@ -87,7 +87,7 @@ export function PromoBanners({
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      <div className="border-gradient sheen relative overflow-hidden rounded-2xl bg-card/40 shadow-[0_8px_40px_-16px_hsl(var(--primary)/0.55)] backdrop-blur-xl">
+      <div className="border-gradient sheen shadow-3d relative overflow-hidden rounded-2xl bg-card/40 backdrop-blur-xl">
         <div
           className="touch-pan-y"
           onPointerDown={onPointerDown}
@@ -211,7 +211,7 @@ function Slide({
           ? "bg-secondary"
           : cn(
               "bg-gradient-to-br",
-              banner.bg_gradient || "from-violet-600/25 via-fuchsia-600/10 to-cyan-500/25"
+              banner.bg_gradient || "from-amber-600/20 via-violet-600/15 to-cyan-500/20"
             )
       )}
     >
@@ -244,8 +244,8 @@ function Slide({
       >
         <div
           className={cn(
-            "hidden size-12 shrink-0 place-items-center rounded-2xl border border-white/15 bg-white/10 shadow-inner backdrop-blur-sm sm:grid",
-            onImage ? "text-white" : "text-primary"
+            "hidden size-12 shrink-0 place-items-center rounded-2xl border border-amber-400/30 bg-gradient-to-br from-amber-500/20 to-orange-600/10 shadow-[0_2px_12px_-2px_rgba(217,119,6,0.5)] backdrop-blur-sm sm:grid",
+            onImage ? "text-amber-200" : "text-amber-300"
           )}
         >
           <Gift className="size-5" />
