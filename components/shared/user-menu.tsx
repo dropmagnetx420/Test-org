@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import {
+  Coins,
   LayoutDashboard,
   LogOut,
   ShieldCheck,
@@ -80,6 +81,10 @@ export function UserMenu({ profile, wallet }: { profile: Profile; wallet: Wallet
         <DropdownMenuItem onSelect={() => router.push("/dashboard")}>
           <LayoutDashboard className="size-4" />
           Dashboard
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => router.push("/earn")}>
+          <Coins className="size-4 text-amber-400" />
+          Earn rewards
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => router.push("/wallet")}>
           <WalletIcon className="size-4" />

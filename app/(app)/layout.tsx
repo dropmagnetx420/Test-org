@@ -1,5 +1,6 @@
 import { Suspense } from "react";
-import { requireProfile, getSettings, isAdminRole } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { requireUser, getProfile, getSettings, isAdminRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { SiteHeader } from "@/components/shared/site-header";
 import { HeaderAccount } from "@/components/shared/header-account";
@@ -10,27 +11,36 @@ import { PromoBar } from "@/components/shared/promo-bar";
 import { DashboardNav } from "@/components/dashboard/dashboard-nav";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const profile = await requireProfile();
-  const settings = await getSettings();
+  /**
+   * `requireUser` resolves the session first because the badge count needs the
+   * id. Everything after it is independent, so the profile, settings and count
+   * go out together rather than as three sequential round trips.
+   */
+  const user = await requireUser();
+  const supabase = await createClient();
+
+  const [profile, settings, unread] = await Promise.all([
+    getProfile(),
+    getSettings(),
+    supabase
+      .from("notifications")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("is_read", false),
+  ]);
+
+  if (!profile) redirect("/login");
+  if (profile.status === "banned") redirect("/banned");
 
   if (settings.maintenance_mode && !isAdminRole(profile.role)) {
     return <MaintenanceNotice settings={settings} />;
   }
 
-  const supabase = await createClient();
-  const { count } = await supabase
-    .from("notifications")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", profile.id)
-    .eq("is_read", false);
+  const count = unread.count;
 
   return (
     <>
-      <SiteHeader
-        siteName={settings.site_name}
-        logoUrl={settings.logo_url}
-        account={<HeaderAccount />}
-      />
+      <SiteHeader siteName={settings.site_name} account={<HeaderAccount />} />
       <Suspense fallback={null}>
         <PromoBar className="mx-auto mt-4 w-full max-w-7xl px-4 sm:px-6 lg:px-8" />
       </Suspense>

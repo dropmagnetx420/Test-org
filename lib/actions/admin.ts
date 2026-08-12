@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdmin, logAdminAction } from "@/lib/auth";
 import {
@@ -31,7 +31,7 @@ import {
   adPlacementSchema,
 } from "@/lib/validations";
 import type { ActionResult, Market } from "@/types/database";
-import { STORAGE_BUCKETS } from "@/lib/constants";
+import { STORAGE_BUCKETS, CACHE_TAGS } from "@/lib/constants";
 
 function slugify(input: string) {
   return input
@@ -163,6 +163,8 @@ export async function createMarket(
     afterData: { title: d.title, sport: d.sport, status: d.status, outcomes: d.outcomes.length },
   });
 
+  updateTag(CACHE_TAGS.MARKETS);
+  updateTag(CACHE_TAGS.STATS);
   revalidatePath("/admin/markets");
   revalidatePath("/markets");
   revalidatePath("/");
@@ -254,6 +256,7 @@ export async function updateMarket(
     afterData: { title: d.title, status: d.status },
   });
 
+  updateTag(CACHE_TAGS.MARKETS);
   revalidatePath("/admin/markets");
   revalidatePath("/markets");
   revalidatePath(`/markets/${data.slug}`);
@@ -283,6 +286,8 @@ export async function resolveMarket(
 
   if (error) return toActionError(error);
 
+  updateTag(CACHE_TAGS.MARKETS);
+  updateTag(CACHE_TAGS.STATS);
   revalidatePath("/admin/markets");
   revalidatePath("/markets");
   revalidatePath("/dashboard/predictions");
@@ -308,6 +313,8 @@ export async function cancelMarket(
 
   if (error) return toActionError(error);
 
+  updateTag(CACHE_TAGS.MARKETS);
+  updateTag(CACHE_TAGS.STATS);
   revalidatePath("/admin/markets");
   revalidatePath("/markets");
 
@@ -333,6 +340,8 @@ export async function deleteMarket(marketId: string): Promise<ActionResult> {
 
   await logAdminAction({ action: "delete_market", entityType: "market", entityId: marketId });
 
+  updateTag(CACHE_TAGS.MARKETS);
+  updateTag(CACHE_TAGS.STATS);
   revalidatePath("/admin/markets");
   revalidatePath("/markets");
   return ok(null, "Market deleted.");
@@ -569,39 +578,8 @@ export async function setUserRole(
 }
 
 // ======================================================== SITE SETTINGS
-const MAX_LOGO_BYTES = 2 * 1024 * 1024;
-const LOGO_TYPES = ["image/jpeg", "image/png", "image/webp"];
-
-/**
- * Uploads a site logo into the public branding folder and returns its public
- * URL. The storage policy gates writes on is_admin(), and the branding path is
- * reserved for admins, so no per-user segment is needed.
- */
-export async function uploadSiteLogo(fd: FormData): Promise<ActionResult<{ url: string }>> {
-  await requireAdmin();
-
-  const file = fd.get("file");
-  if (!(file instanceof File) || file.size === 0) return fail("Select an image to upload.");
-  if (file.size > MAX_LOGO_BYTES) return fail("Logo is too large. Maximum size is 2 MB.");
-  if (!LOGO_TYPES.includes(file.type)) {
-    return fail("Unsupported file type. Upload a JPG, PNG or WebP image.");
-  }
-
-  const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "png";
-  const path = `branding/logo-${Date.now()}.${ext}`;
-
-  const supabase = await createClient();
-  const { error } = await supabase.storage
-    .from(STORAGE_BUCKETS.PUBLIC)
-    .upload(path, file, { upsert: false, contentType: file.type });
-
-  if (error) return toActionError(error);
-
-  const { data } = supabase.storage.from(STORAGE_BUCKETS.PUBLIC).getPublicUrl(path);
-  return ok({ url: data.publicUrl });
-}
-
 const MAX_BANNER_BYTES = 4 * 1024 * 1024;
+const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export async function uploadBannerImage(fd: FormData): Promise<ActionResult<{ url: string }>> {
   await requireAdmin();
@@ -609,7 +587,7 @@ export async function uploadBannerImage(fd: FormData): Promise<ActionResult<{ ur
   const file = fd.get("file");
   if (!(file instanceof File) || file.size === 0) return fail("Select an image to upload.");
   if (file.size > MAX_BANNER_BYTES) return fail("Image is too large. Maximum size is 4 MB.");
-  if (!LOGO_TYPES.includes(file.type)) {
+  if (!IMAGE_TYPES.includes(file.type)) {
     return fail("Unsupported file type. Upload a JPG, PNG or WebP image.");
   }
 
@@ -636,7 +614,6 @@ export async function updateSiteSettings(
   const parsed = parseOrFail(siteSettingsSchema, {
     siteName: formString(fd, "siteName"),
     siteTagline: formString(fd, "siteTagline"),
-    logoUrl: formString(fd, "logoUrl"),
     supportEmail: formString(fd, "supportEmail"),
     twitterUrl: formString(fd, "twitterUrl"),
     telegramUrl: formString(fd, "telegramUrl"),
@@ -677,7 +654,6 @@ export async function updateSiteSettings(
     .update({
       site_name: d.siteName,
       site_tagline: d.siteTagline || null,
-      logo_url: d.logoUrl || null,
       support_email: d.supportEmail || null,
       twitter_url: d.twitterUrl || null,
       telegram_url: d.telegramUrl || null,
@@ -712,6 +688,7 @@ export async function updateSiteSettings(
 
   await logAdminAction({ action: "update_settings", entityType: "site_settings", entityId: null });
 
+  updateTag(CACHE_TAGS.SETTINGS);
   revalidatePath("/", "layout");
   return ok(null, "Settings saved.");
 }
@@ -809,6 +786,7 @@ export async function saveBanner(_prev: ActionResult | null, fd: FormData): Prom
 
   if (error) return toActionError(error);
 
+  updateTag(CACHE_TAGS.BANNERS);
   revalidatePath("/admin/settings/banners");
   revalidatePath("/");
   return ok(null, id ? "Banner updated." : "Banner created.");
@@ -821,6 +799,7 @@ export async function deleteBanner(id: string): Promise<ActionResult> {
   const { error } = await supabase.from("promo_banners").delete().eq("id", id);
   if (error) return toActionError(error);
 
+  updateTag(CACHE_TAGS.BANNERS);
   revalidatePath("/admin/settings/banners");
   revalidatePath("/");
   return ok(null, "Banner deleted.");
@@ -855,6 +834,7 @@ export async function savePartner(_prev: ActionResult | null, fd: FormData): Pro
 
   if (error) return toActionError(error);
 
+  updateTag(CACHE_TAGS.PARTNERS);
   revalidatePath("/admin/settings/partners");
   revalidatePath("/");
   return ok(null, id ? "Partner updated." : "Partner added.");
@@ -867,6 +847,7 @@ export async function deletePartner(id: string): Promise<ActionResult> {
   const { error } = await supabase.from("partners").delete().eq("id", id);
   if (error) return toActionError(error);
 
+  updateTag(CACHE_TAGS.PARTNERS);
   revalidatePath("/admin/settings/partners");
   revalidatePath("/");
   return ok(null, "Partner removed.");
@@ -915,6 +896,8 @@ export async function closeExpiredMarkets(): Promise<ActionResult<{ closed: numb
   const { data, error } = await supabase.rpc("close_expired_markets");
   if (error) return toActionError(error);
 
+  updateTag(CACHE_TAGS.MARKETS);
+  updateTag(CACHE_TAGS.STATS);
   revalidatePath("/admin/markets");
   revalidatePath("/markets");
 
@@ -945,6 +928,8 @@ export async function setMarketVolume(
 
   if (error) return toActionError(error);
 
+  updateTag(CACHE_TAGS.MARKETS);
+  updateTag(CACHE_TAGS.STATS);
   revalidatePath("/admin/markets");
   revalidatePath("/markets");
   return ok(null, "Seeded volume updated.");
@@ -1115,6 +1100,7 @@ export async function saveAdPlacement(
     afterData: { provider: d.provider, format: d.format, is_active: d.isActive },
   });
 
+  updateTag(CACHE_TAGS.ADS);
   revalidatePath("/admin/settings/ads");
   revalidatePath("/", "layout");
   return ok(null, "Ad placement saved.");

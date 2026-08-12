@@ -2,16 +2,13 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/sonner";
 import { SubmitButton } from "@/components/shared/submit-button";
-import { updateSiteSettings, uploadSiteLogo } from "@/lib/actions/admin";
+import { updateSiteSettings } from "@/lib/actions/admin";
 import { toNumber } from "@/lib/utils";
 import type { ActionResult, SiteSettings } from "@/types/database";
 
@@ -55,7 +52,6 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
           maxLength={120}
           error={err?.siteTagline?.[0]}
         />
-        <LogoField defaultUrl={settings.logo_url ?? ""} error={err?.logoUrl?.[0]} />
         <Text
           name="supportEmail"
           label="Support email"
@@ -337,80 +333,6 @@ function Text({
       </Label>
       <Input id={name} name={name} {...props} />
       {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
-      {error && <p className="text-xs text-red-400">{error}</p>}
-    </div>
-  );
-}
-
-/** Uploads immediately and keeps the resulting URL in a hidden field. */
-function LogoField({ defaultUrl, error }: { defaultUrl: string; error?: string }) {
-  const [url, setUrl] = useState(defaultUrl);
-  const [uploading, setUploading] = useState(false);
-
-  async function onFile(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    setUploading(true);
-    const fd = new FormData();
-    fd.set("file", file);
-
-    const result = await uploadSiteLogo(fd);
-    setUploading(false);
-
-    if (result.success && result.data) {
-      setUrl(result.data.url);
-      toast.success("Logo uploaded. Save settings to apply it.");
-    } else {
-      toast.error(result.error ?? "Upload failed.");
-      event.target.value = "";
-    }
-  }
-
-  return (
-    <div className="space-y-2 sm:col-span-2">
-      <Label htmlFor="logo-file">
-        Logo <span className="text-muted-foreground">(optional)</span>
-      </Label>
-      <input type="hidden" name="logoUrl" value={url} />
-
-      <div className="flex items-center gap-3">
-        {url && (
-          <Image
-            src={url}
-            alt="Current logo"
-            width={40}
-            height={40}
-            unoptimized
-            className="size-10 shrink-0 rounded-lg border border-border/60 bg-secondary/40 object-contain"
-          />
-        )}
-        <Input
-          id="logo-file"
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          onChange={onFile}
-          disabled={uploading}
-          className="text-xs"
-        />
-        {uploading && <Loader2 className="size-4 shrink-0 animate-spin" />}
-        {url && !uploading && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => setUrl("")}
-            className="shrink-0"
-          >
-            Remove
-          </Button>
-        )}
-      </div>
-
-      <p className="text-xs text-muted-foreground">
-        JPG, PNG or WebP up to 2 MB. Replaces the default mark in the header, footer and auth
-        pages. Leave empty to keep the default.
-      </p>
       {error && <p className="text-xs text-red-400">{error}</p>}
     </div>
   );

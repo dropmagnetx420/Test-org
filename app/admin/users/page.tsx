@@ -12,10 +12,39 @@ import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/auth";
 import { DEFAULTS } from "@/lib/constants";
 import { cn, formatCurrency, toNumber, truncateAddress } from "@/lib/utils";
-import type { Profile, Wallet } from "@/types/database";
+import type { Profile, Referral, Wallet } from "@/types/database";
 
 export const metadata: Metadata = { title: "Users · Admin" };
 export const dynamic = "force-dynamic";
+
+type ReferralRow = Pick<Referral, "referrer_id" | "total_volume" | "commission_earned">;
+
+interface ReferralSummary {
+  invited: number;
+  trading: number;
+  volume: number;
+  commission: number;
+}
+
+/** Postgrest cannot group, so the referrer rows are rolled up here. */
+function aggregateReferrals(rows: ReferralRow[] | null) {
+  const map = new Map<string, ReferralSummary>();
+
+  for (const row of rows ?? []) {
+    const summary =
+      map.get(row.referrer_id) ?? { invited: 0, trading: 0, volume: 0, commission: 0 };
+    const volume = toNumber(row.total_volume);
+
+    summary.invited += 1;
+    if (volume > 0) summary.trading += 1;
+    summary.volume += volume;
+    summary.commission += toNumber(row.commission_earned);
+
+    map.set(row.referrer_id, summary);
+  }
+
+  return map;
+}
 
 const TABS = [
   { value: "all", label: "All" },
@@ -56,17 +85,20 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
   const total = count ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / DEFAULTS.PAGE_SIZE));
 
-  const { data: walletRows } = users.length
-    ? await supabase
-        .from("wallets")
-        .select("*")
-        .in(
-          "user_id",
-          users.map((u) => u.id)
-        )
-    : { data: [] };
+  const ids = users.map((u) => u.id);
+
+  const [{ data: walletRows }, { data: referralRows }] = ids.length
+    ? await Promise.all([
+        supabase.from("wallets").select("*").in("user_id", ids),
+        supabase
+          .from("referrals")
+          .select("referrer_id,total_volume,commission_earned")
+          .in("referrer_id", ids),
+      ])
+    : [{ data: [] }, { data: [] }];
 
   const wallets = new Map(((walletRows as Wallet[]) ?? []).map((w) => [w.user_id, w]));
+  const referrals = aggregateReferrals(referralRows as ReferralRow[] | null);
 
   function tabHref(value: string) {
     const params = new URLSearchParams({ status: value });
@@ -137,6 +169,7 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
           <div className="space-y-3">
             {users.map((user) => {
               const wallet = wallets.get(user.id);
+              const referral = referrals.get(user.id);
               const name = user.full_name || user.username || user.email;
 
               return (
@@ -174,7 +207,6 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
                           value={`${formatCurrency(user.total_volume)} USDG`}
                           mono
                         />
-                        <Field label="Referral code" value={user.referral_code} mono />
                         <Field label="ID" value={truncateAddress(user.id, 8, 6)} mono />
                         <Field
                           label="Joined"
@@ -192,6 +224,8 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
                           />
                         )}
                       </dl>
+
+                      <ReferralStrip summary={referral} code={user.referral_code} />
 
                       {user.status === "suspended" && user.suspended_until && (
                         <p className="text-xs text-amber-300">
@@ -242,6 +276,43 @@ function Field({ label, value, mono }: { label: string; value: string; mono?: bo
     <div className="flex gap-2">
       <dt className="shrink-0 text-muted-foreground">{label}</dt>
       <dd className={cn("truncate", mono && "font-mono")}>{value}</dd>
+    </div>
+  );
+}
+
+/** Who this account brought in, and what those invitees actually trade. */
+function ReferralStrip({ summary, code }: { summary?: ReferralSummary; code: string }) {
+  return (
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 rounded-lg border border-border/50 bg-secondary/25 px-3 py-2 text-xs">
+      <span className="inline-flex items-center gap-1.5 font-medium">
+        <Users className="size-3.5 text-primary" />
+        Referrals
+      </span>
+
+      {summary ? (
+        <>
+          <span>
+            <span className="font-mono font-semibold tabular-nums">{summary.invited}</span> invited ·{" "}
+            <span className="font-mono font-semibold tabular-nums">{summary.trading}</span> trading
+          </span>
+          <span className="text-muted-foreground">
+            volume{" "}
+            <span className="font-mono tabular-nums text-foreground">
+              {formatCurrency(summary.volume)} USDG
+            </span>
+          </span>
+          <span className="text-muted-foreground">
+            commission{" "}
+            <span className="font-mono tabular-nums text-emerald-400">
+              {formatCurrency(summary.commission)} USDG
+            </span>
+          </span>
+        </>
+      ) : (
+        <span className="text-muted-foreground">No invites yet</span>
+      )}
+
+      <span className="ml-auto font-mono text-[11px] text-muted-foreground">{code}</span>
     </div>
   );
 }

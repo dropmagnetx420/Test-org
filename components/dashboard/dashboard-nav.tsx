@@ -7,7 +7,7 @@ import {
   ArrowUpFromLine,
   Bell,
   BadgeCheck,
-  Briefcase,
+  Coins,
   Gift,
   LayoutDashboard,
   Receipt,
@@ -22,13 +22,13 @@ import { cn } from "@/lib/utils";
 const LINKS = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/dashboard/predictions", label: "Predictions", icon: TrendingUp },
+  { href: "/earn", label: "Earn rewards", icon: Coins, accent: true },
+  { href: "/referrals", label: "Referrals", icon: Users },
   { href: "/wallet", label: "Wallet", icon: Wallet },
   { href: "/wallet/deposit", label: "Deposit", icon: ArrowDownToLine },
   { href: "/wallet/withdraw", label: "Withdraw", icon: ArrowUpFromLine },
   { href: "/dashboard/transactions", label: "Transactions", icon: Receipt },
   { href: "/dashboard/bonuses", label: "Bonuses", icon: Gift },
-  { href: "/earn", label: "Earn", icon: Briefcase },
-  { href: "/referrals", label: "Referrals", icon: Users },
   { href: "/dashboard/notifications", label: "Notifications", icon: Bell, badgeKey: "unread" },
   { href: "/kyc", label: "Verification", icon: BadgeCheck },
   { href: "/profile", label: "Profile", icon: User },
@@ -44,6 +44,7 @@ export function DashboardNav({ unreadCount = 0 }: { unreadCount?: number }) {
         {LINKS.map(({ href, label, icon: Icon, ...rest }) => {
           const active = pathname === href;
           const badge = "badgeKey" in rest && unreadCount > 0;
+          const accent = "accent" in rest;
 
           return (
             <Link
@@ -53,7 +54,9 @@ export function DashboardNav({ unreadCount = 0 }: { unreadCount?: number }) {
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 active
                   ? "bg-primary/15 text-primary"
-                  : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+                  : accent
+                    ? "border border-amber-500/30 bg-amber-500/[0.08] text-amber-300 hover:bg-amber-500/15"
+                    : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
               )}
             >
               <Icon className="size-4 shrink-0" />
@@ -73,6 +76,7 @@ export function DashboardNav({ unreadCount = 0 }: { unreadCount?: number }) {
         {LINKS.map(({ href, label, icon: Icon, ...rest }) => {
           const active = pathname === href;
           const badge = "badgeKey" in rest && unreadCount > 0;
+          const accent = "accent" in rest;
 
           return (
             <Link
@@ -82,7 +86,9 @@ export function DashboardNav({ unreadCount = 0 }: { unreadCount?: number }) {
                 "flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
                 active
                   ? "border-primary bg-primary/15 text-primary"
-                  : "border-border/60 bg-card/60 text-muted-foreground"
+                  : accent
+                    ? "border-amber-500/40 bg-amber-500/10 text-amber-300"
+                    : "border-border/60 bg-card/60 text-muted-foreground"
               )}
             >
               <Icon className="size-3.5" />

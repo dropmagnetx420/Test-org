@@ -1,7 +1,8 @@
 import "server-only";
 import { cache } from "react";
-import { createClient, createAdminClient } from "@/lib/supabase/server";
-import { DEFAULTS } from "@/lib/constants";
+import { unstable_cache } from "next/cache";
+import { createClient, createAdminClient, createPublicClient } from "@/lib/supabase/server";
+import { CACHE_TAGS, DEFAULTS } from "@/lib/constants";
 import type {
   AdPlacementConfig,
   AdPlacementSlot,
@@ -20,8 +21,23 @@ import type {
 const MARKET_LIST_COLUMNS =
   "id,slug,sport,league,title,team_a,team_b,yes_label,no_label,yes_odds,no_odds,total_volume,trade_count,status,is_featured,is_trending,start_time,end_time,resolved_outcome";
 
-export const getLiveMarkets = cache(async (limit = 8): Promise<Market[]> => {
-  const supabase = await createClient();
+/**
+ * Public reads were hitting Postgres on every request even though the rows only
+ * change when an admin edits them. `unstable_cache` holds the result between
+ * requests; the `cache` wrapper collapses repeat calls inside a single render.
+ * Callbacks must stay cookie-free, hence `createPublicClient`.
+ */
+function cached<A extends unknown[], R>(
+  fn: (...args: A) => Promise<R>,
+  keyParts: string[],
+  options: { revalidate: number; tags: string[] }
+) {
+  return cache(unstable_cache(fn, keyParts, options));
+}
+
+export const getLiveMarkets = cached(
+  async (limit: number = 8): Promise<Market[]> => {
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("markets")
     .select("*")
@@ -30,10 +46,14 @@ export const getLiveMarkets = cache(async (limit = 8): Promise<Market[]> => {
     .order("start_time", { ascending: true })
     .limit(limit);
   return (data as Market[]) ?? [];
-});
+  },
+  ["live-markets"],
+  { revalidate: 30, tags: [CACHE_TAGS.MARKETS] }
+);
 
-export const getTrendingMarkets = cache(async (limit = 8): Promise<Market[]> => {
-  const supabase = await createClient();
+export const getTrendingMarkets = cached(
+  async (limit: number = 8): Promise<Market[]> => {
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("markets")
     .select("*")
@@ -42,10 +62,14 @@ export const getTrendingMarkets = cache(async (limit = 8): Promise<Market[]> => 
     .order("total_volume", { ascending: false })
     .limit(limit);
   return (data as Market[]) ?? [];
-});
+  },
+  ["trending-markets"],
+  { revalidate: 30, tags: [CACHE_TAGS.MARKETS] }
+);
 
-export const getFeaturedMarkets = cache(async (limit = 4): Promise<Market[]> => {
-  const supabase = await createClient();
+export const getFeaturedMarkets = cached(
+  async (limit: number = 4): Promise<Market[]> => {
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("markets")
     .select("*")
@@ -54,10 +78,14 @@ export const getFeaturedMarkets = cache(async (limit = 4): Promise<Market[]> => 
     .order("start_time", { ascending: true })
     .limit(limit);
   return (data as Market[]) ?? [];
-});
+  },
+  ["featured-markets"],
+  { revalidate: 60, tags: [CACHE_TAGS.MARKETS] }
+);
 
-export const getActiveBanners = cache(async (): Promise<PromoBanner[]> => {
-  const supabase = await createClient();
+export const getActiveBanners = cached(
+  async (): Promise<PromoBanner[]> => {
+  const supabase = createPublicClient();
   // claim_promo enforces the window too, so an unfiltered banner would render
   // and then fail with PROMO_EXPIRED on click.
   const now = new Date().toISOString();
@@ -69,17 +97,24 @@ export const getActiveBanners = cache(async (): Promise<PromoBanner[]> => {
     .or(`ends_at.is.null,ends_at.gte.${now}`)
     .order("position", { ascending: true });
   return (data as PromoBanner[]) ?? [];
-});
+  },
+  ["active-banners"],
+  { revalidate: 60, tags: [CACHE_TAGS.BANNERS] }
+);
 
-export const getPartners = cache(async (): Promise<Partner[]> => {
-  const supabase = await createClient();
+export const getPartners = cached(
+  async (): Promise<Partner[]> => {
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("partners")
     .select("*")
     .eq("is_active", true)
     .order("position", { ascending: true });
   return (data as Partner[]) ?? [];
-});
+  },
+  ["partners"],
+  { revalidate: 300, tags: [CACHE_TAGS.PARTNERS] }
+);
 
 export interface PublicStats {
   totalVolume: number;
@@ -96,7 +131,8 @@ export interface PublicStats {
  * the function. Aggregating in SQL keeps this off the markets table scan it
  * used to do on every request.
  */
-export const getPublicStats = cache(async (): Promise<PublicStats> => {
+export const getPublicStats = cached(
+  async (): Promise<PublicStats> => {
   const empty: PublicStats = {
     totalVolume: 0,
     totalTrades: 0,
@@ -131,7 +167,10 @@ export const getPublicStats = cache(async (): Promise<PublicStats> => {
   } catch {
     return empty;
   }
-});
+  },
+  ["public-stats"],
+  { revalidate: 60, tags: [CACHE_TAGS.STATS] }
+);
 
 export interface MarketFilters {
   sport?: string;
@@ -142,8 +181,9 @@ export interface MarketFilters {
   pageSize?: number;
 }
 
-export async function listMarkets(filters: MarketFilters = {}): Promise<Paginated<Market>> {
-  const supabase = await createClient();
+export const listMarkets = cached(
+  async (filters: MarketFilters = {}): Promise<Paginated<Market>> => {
+    const supabase = createPublicClient();
   const pageSize = filters.pageSize ?? DEFAULTS.PAGE_SIZE;
   const page = Math.max(1, filters.page ?? 1);
   const from = (page - 1) * pageSize;
@@ -184,34 +224,47 @@ export async function listMarkets(filters: MarketFilters = {}): Promise<Paginate
     pageSize,
     totalPages: Math.max(1, Math.ceil(total / pageSize)),
   };
-}
+  },
+  ["list-markets"],
+  { revalidate: 30, tags: [CACHE_TAGS.MARKETS] }
+);
 
-export async function getMarketBySlug(slug: string): Promise<Market | null> {
-  const supabase = await createClient();
-  const { data } = await supabase.from("markets").select("*").eq("slug", slug).maybeSingle();
-  return (data as Market) ?? null;
-}
+export const getMarketBySlug = cached(
+  async (slug: string): Promise<Market | null> => {
+    const supabase = createPublicClient();
+    const { data } = await supabase.from("markets").select("*").eq("slug", slug).maybeSingle();
+    return (data as Market) ?? null;
+  },
+  ["market-by-slug"],
+  { revalidate: 15, tags: [CACHE_TAGS.MARKETS] }
+);
 
-export async function getMarketOptions(marketId: string): Promise<MarketOption[]> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("market_options")
-    .select("*")
-    .eq("market_id", marketId)
-    .order("position", { ascending: true });
-  return (data as MarketOption[]) ?? [];
-}
+export const getMarketOptions = cached(
+  async (marketId: string): Promise<MarketOption[]> => {
+    const supabase = createPublicClient();
+    const { data } = await supabase
+      .from("market_options")
+      .select("*")
+      .eq("market_id", marketId)
+      .order("position", { ascending: true });
+    return (data as MarketOption[]) ?? [];
+  },
+  ["market-options"],
+  { revalidate: 15, tags: [CACHE_TAGS.MARKETS] }
+);
 
 /** Active ad slots keyed by placement, cached per request. */
-export const getAdPlacements = cache(
+export const getAdPlacements = cached(
   async (): Promise<Partial<Record<AdPlacementSlot, AdPlacementConfig>>> => {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data } = await supabase.from("ad_placements").select("*").eq("is_active", true);
 
     const map: Partial<Record<AdPlacementSlot, AdPlacementConfig>> = {};
     for (const row of (data as AdPlacementConfig[]) ?? []) map[row.placement] = row;
     return map;
-  }
+  },
+  ["ad-placements"],
+  { revalidate: 300, tags: [CACHE_TAGS.ADS] }
 );
 
 /**

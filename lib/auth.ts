@@ -1,10 +1,11 @@
 import "server-only";
 import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient, createPublicClient } from "@/lib/supabase/server";
 import type { Profile, Wallet, SiteSettings } from "@/types/database";
-import { RATE_LIMITS } from "@/lib/constants";
+import { CACHE_TAGS, RATE_LIMITS } from "@/lib/constants";
 
 export const getUser = cache(async () => {
   const supabase = await createClient();
@@ -32,11 +33,24 @@ export const getWallet = cache(async (): Promise<Wallet | null> => {
   return (data as Wallet) ?? null;
 });
 
-export const getSettings = cache(async (): Promise<SiteSettings> => {
-  const supabase = await createClient();
-  const { data } = await supabase.from("site_settings").select("*").eq("id", 1).single();
-  return data as SiteSettings;
-});
+/**
+ * Every layout, the footer and each ad slot read this, so an uncached lookup
+ * cost four to five identical round trips per page. `site_settings` is world
+ * readable, so the anonymous client is enough and keeps the call out of the
+ * per-request cookie scope. `cache` collapses repeat calls inside one render;
+ * `unstable_cache` keeps it off the wire between renders.
+ */
+export const getSettings = cache(
+  unstable_cache(
+    async (): Promise<SiteSettings> => {
+      const supabase = createPublicClient();
+      const { data } = await supabase.from("site_settings").select("*").eq("id", 1).single();
+      return data as SiteSettings;
+    },
+    ["site-settings"],
+    { revalidate: 300, tags: [CACHE_TAGS.SETTINGS] }
+  )
+);
 
 /** Redirects to /login when unauthenticated. Use in protected pages. */
 export async function requireUser() {

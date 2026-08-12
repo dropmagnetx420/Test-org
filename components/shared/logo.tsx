@@ -8,6 +8,10 @@ import { cn } from "@/lib/utils";
  * Referenced by path rather than statically imported — a static import makes
  * webpack generate a blur placeholder through `sharp`, which has no native
  * binding on arm64 and breaks the build there. Dimensions are fixed anyway.
+ *
+ * Deliberately the only source of the mark: an operator-uploadable logo meant
+ * every deployment carried a stale override in `site_settings.logo_url` that
+ * silently beat the shipped art.
  */
 const BRAND_MARK = "/logo-mark.png";
 
@@ -22,13 +26,11 @@ export function Logo({
   size = "md",
   showText = true,
   className,
-  logoUrl,
   siteName = "NextGen Predict",
 }: {
   size?: "sm" | "md" | "lg";
   showText?: boolean;
   className?: string;
-  logoUrl?: string | null;
   siteName?: string;
 }) {
   const dims = {
@@ -42,18 +44,14 @@ export function Logo({
   return (
     <div className={cn("flex items-center gap-2.5", className)}>
       <Image
-        src={logoUrl ?? BRAND_MARK}
+        src={BRAND_MARK}
         alt={siteName}
         width={dims.px}
         height={dims.px}
         quality={82}
-        loading="eager"
+        priority
         className={cn(
-          "shrink-0 object-contain",
-          // The bundled mark is a circular seal, so it gets a matching frame.
-          // An operator-uploaded logo may be any aspect ratio — clipping it to
-          // a circle would cut the edges off.
-          logoUrl ? "rounded-xl" : "rounded-full ring-1 ring-inset ring-amber-500/25",
+          "shrink-0 rounded-full object-contain ring-1 ring-inset ring-amber-500/25",
           dims.box
         )}
       />

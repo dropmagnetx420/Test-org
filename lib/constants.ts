@@ -131,6 +131,20 @@ export const STORAGE_BUCKETS = {
   TASK_PROOFS: "task-proofs",
 } as const;
 
+/**
+ * Tags for the cached public reads in `lib/queries.ts` and `getSettings`.
+ * Admin writes must revalidate the matching tag or operators will keep staring
+ * at the old value until the timed revalidation expires.
+ */
+export const CACHE_TAGS = {
+  SETTINGS: "site-settings",
+  MARKETS: "markets",
+  BANNERS: "promo-banners",
+  PARTNERS: "partners",
+  ADS: "ad-placements",
+  STATS: "public-stats",
+} as const;
+
 export const RATE_LIMITS = {
   AUTH: { limit: 8, windowMs: 60_000 },
   TRADE: { limit: 30, windowMs: 60_000 },

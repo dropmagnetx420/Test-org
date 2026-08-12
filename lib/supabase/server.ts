@@ -27,6 +27,23 @@ export async function createClient() {
 }
 
 /**
+ * Anonymous, cookie-free client for public reads. Two reasons it exists:
+ * `unstable_cache` callbacks cannot touch `cookies()`, and the cookie-bound
+ * client above opts every caller into dynamic rendering. Only ever use it for
+ * data that anonymous visitors are allowed to see — RLS applies as `anon`.
+ */
+export function createPublicClient() {
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: { getAll: () => [], setAll: () => {} },
+      auth: { autoRefreshToken: false, persistSession: false },
+    }
+  );
+}
+
+/**
  * Service-role client. Bypasses RLS — never expose to the browser and never
  * call with unvalidated user input.
  */

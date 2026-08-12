@@ -9,10 +9,10 @@ import { cn } from "@/lib/utils";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const profile = await requireAdmin();
-  const settings = await getSettings();
-
   const supabase = await createClient();
-  const [deposits, withdrawals, kyc, tasks] = await Promise.all([
+
+  const [settings, deposits, withdrawals, kyc, tasks] = await Promise.all([
+    getSettings(),
     supabase
       .from("deposit_requests")
       .select("id", { count: "exact", head: true })
@@ -41,20 +41,16 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <>
-      <SiteHeader
-        siteName={settings.site_name}
-        logoUrl={settings.logo_url}
-        account={<HeaderAccount />}
-      />
+      <SiteHeader siteName={settings.site_name} account={<HeaderAccount />} />
 
-      <div className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
-        <div className="border-gradient mb-6 flex flex-wrap items-center gap-x-4 gap-y-3 rounded-2xl bg-card/40 px-4 py-3.5 backdrop-blur-xl">
-          <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/12 text-primary ring-1 ring-inset ring-primary/25">
-            <ShieldCheck className="size-4" />
+      <div className="border-b border-border/50 bg-gradient-to-r from-primary/[0.07] via-transparent to-accent/[0.07]">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-4 gap-y-3 px-4 py-4 sm:px-6 lg:px-8">
+          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/12 text-primary ring-1 ring-inset ring-primary/25">
+            <ShieldCheck className="size-5" />
           </span>
 
           <div className="min-w-0">
-            <p className="text-sm font-semibold leading-tight">Admin console</p>
+            <p className="text-[15px] font-semibold leading-tight tracking-tight">Admin console</p>
             <p className="truncate text-xs capitalize text-muted-foreground">
               {profile.role.replace("_", " ")} · {profile.full_name ?? profile.email}
             </p>
@@ -79,12 +75,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             </Link>
           </div>
         </div>
-
-        <div className="flex flex-col gap-8 lg:flex-row">
-          <AdminNav badges={badges} />
-          <div className="min-w-0 flex-1">{children}</div>
-        </div>
       </div>
+
+      {/* Sticks under the 4rem site header so the menu bar is always reachable. */}
+      <div className="sticky top-16 z-40 border-b border-border/60 bg-background/85 backdrop-blur-xl">
+        <AdminNav badges={badges} />
+      </div>
+
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:px-8">{children}</main>
     </>
   );
 }

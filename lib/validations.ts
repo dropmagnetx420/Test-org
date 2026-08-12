@@ -248,7 +248,6 @@ export const balanceAdjustSchema = z
 export const siteSettingsSchema = z.object({
   siteName: z.string().trim().min(2).max(60),
   siteTagline: z.string().trim().max(120).optional().or(z.literal("")),
-  logoUrl: z.string().trim().max(500).optional().or(z.literal("")),
   supportEmail: z.string().trim().email().optional().or(z.literal("")),
   twitterUrl: z.string().trim().url().max(300).optional().or(z.literal("")),
   telegramUrl: z.string().trim().url().max(300).optional().or(z.literal("")),

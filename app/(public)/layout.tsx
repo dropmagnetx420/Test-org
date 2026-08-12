@@ -25,7 +25,6 @@ export default async function PublicLayout({ children }: { children: React.React
     <>
       <SiteHeader
         siteName={settings.site_name}
-        logoUrl={settings.logo_url}
         account={
           <Suspense fallback={<HeaderAccountFallback />}>
             <HeaderAccount />

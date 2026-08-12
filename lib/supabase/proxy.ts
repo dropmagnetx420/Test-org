@@ -5,7 +5,34 @@ const PROTECTED_PREFIXES = ["/dashboard", "/wallet", "/kyc", "/referrals", "/pro
 const ADMIN_PREFIX = "/admin";
 const AUTH_ROUTES = ["/login", "/register", "/forgot-password"];
 
+/** `sb-<project-ref>-auth-token`, possibly chunked into `.0`, `.1`, … */
+function hasSessionCookie(request: NextRequest) {
+  return request.cookies
+    .getAll()
+    .some((c) => c.name.startsWith("sb-") && c.name.includes("auth-token"));
+}
+
+function redirectTo(request: NextRequest, pathname: string, next?: string) {
+  const url = request.nextUrl.clone();
+  url.pathname = pathname;
+  url.search = "";
+  if (next) url.searchParams.set("next", next);
+  return NextResponse.redirect(url);
+}
+
 export async function updateSession(request: NextRequest) {
+  const path = request.nextUrl.pathname;
+  const isGated = path.startsWith(ADMIN_PREFIX) || PROTECTED_PREFIXES.some((p) => path.startsWith(p));
+
+  /**
+   * `auth.getUser()` is a round trip to Supabase on every matched request. With
+   * no session cookie there is no token to validate or refresh, so the answer is
+   * already known and the hop is pure latency for anonymous visitors.
+   */
+  if (!hasSessionCookie(request)) {
+    return isGated ? redirectTo(request, "/login", path) : NextResponse.next({ request });
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -31,38 +58,15 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const path = request.nextUrl.pathname;
-  const isProtected = PROTECTED_PREFIXES.some((p) => path.startsWith(p));
-  const isAdmin = path.startsWith(ADMIN_PREFIX);
-
-  if (!user && (isProtected || isAdmin)) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    url.searchParams.set("next", path);
-    return NextResponse.redirect(url);
+  if (!user) {
+    // Stale or revoked cookie. Let public pages render as anonymous.
+    return isGated ? redirectTo(request, "/login", path) : response;
   }
 
-  if (user && AUTH_ROUTES.includes(path)) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
-    url.search = "";
-    return NextResponse.redirect(url);
-  }
+  if (AUTH_ROUTES.includes(path)) return redirectTo(request, "/dashboard");
 
-  if (user && isAdmin) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role, status")
-      .eq("id", user.id)
-      .single();
-
-    if (!profile || (profile.role !== "admin" && profile.role !== "super_admin")) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/dashboard";
-      url.search = "";
-      return NextResponse.redirect(url);
-    }
-  }
-
+  // Role is deliberately not checked here: `requireAdmin()` in the admin layout
+  // is authoritative, and repeating the profile lookup added a second query to
+  // every admin request for no extra safety.
   return response;
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { Fragment } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -33,44 +34,31 @@ interface AdminLink {
   badgeKey?: BadgeKey;
 }
 
-/** Grouped so the review queues — the daily work — read as one block. */
-const GROUPS: { heading: string; links: AdminLink[] }[] = [
-  {
-    heading: "Overview",
-    links: [{ href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true }],
-  },
-  {
-    heading: "Review queue",
-    links: [
-      { href: "/admin/deposits", label: "Deposits", icon: ArrowDownToLine, badgeKey: "deposits" },
-      {
-        href: "/admin/withdrawals",
-        label: "Withdrawals",
-        icon: ArrowUpFromLine,
-        badgeKey: "withdrawals",
-      },
-      { href: "/admin/kyc", label: "KYC", icon: BadgeCheck, badgeKey: "kyc" },
-      { href: "/admin/tasks", label: "Tasks", icon: Briefcase, badgeKey: "tasks" },
-    ],
-  },
-  {
-    heading: "Manage",
-    links: [
-      { href: "/admin/markets", label: "Markets", icon: Trophy },
-      { href: "/admin/users", label: "Users", icon: Users },
-      { href: "/admin/notifications", label: "Announcements", icon: Bell },
-    ],
-  },
-  {
-    heading: "System",
-    links: [
-      { href: "/admin/settings", label: "Settings", icon: Settings },
-      { href: "/admin/logs", label: "Audit logs", icon: ScrollText },
-    ],
-  },
+/** Groups render as one menu bar separated by hairlines — the review queues,
+ *  which are the daily work, stay adjacent and one click deep. */
+const GROUPS: AdminLink[][] = [
+  [{ href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true }],
+  [
+    { href: "/admin/deposits", label: "Deposits", icon: ArrowDownToLine, badgeKey: "deposits" },
+    {
+      href: "/admin/withdrawals",
+      label: "Withdrawals",
+      icon: ArrowUpFromLine,
+      badgeKey: "withdrawals",
+    },
+    { href: "/admin/kyc", label: "KYC", icon: BadgeCheck, badgeKey: "kyc" },
+    { href: "/admin/tasks", label: "Tasks", icon: Briefcase, badgeKey: "tasks" },
+  ],
+  [
+    { href: "/admin/markets", label: "Markets", icon: Trophy },
+    { href: "/admin/users", label: "Users", icon: Users },
+    { href: "/admin/notifications", label: "Announcements", icon: Bell },
+  ],
+  [
+    { href: "/admin/settings", label: "Settings", icon: Settings },
+    { href: "/admin/logs", label: "Audit logs", icon: ScrollText },
+  ],
 ];
-
-const ALL_LINKS = GROUPS.flatMap((group) => group.links);
 
 export function AdminNav({ badges }: { badges: AdminBadges }) {
   const pathname = usePathname();
@@ -81,88 +69,57 @@ export function AdminNav({ badges }: { badges: AdminBadges }) {
       : pathname === link.href || pathname.startsWith(`${link.href}/`);
   }
 
-  function countFor(link: AdminLink) {
-    return link.badgeKey ? badges[link.badgeKey] : 0;
-  }
-
   return (
-    <>
-      <nav className="sticky top-20 hidden h-fit w-60 shrink-0 lg:block" aria-label="Admin">
-        <div className="glass space-y-5 rounded-2xl p-3">
-          {GROUPS.map((group) => (
-            <div key={group.heading}>
-              <p className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
-                {group.heading}
-              </p>
-              <div className="space-y-0.5">
-                {group.links.map((link) => {
-                  const Icon = link.icon;
-                  const active = isActive(link);
-                  const count = countFor(link);
+    <nav aria-label="Admin sections" className="mx-auto w-full max-w-7xl px-2 sm:px-4 lg:px-6">
+      <div className="no-scrollbar flex items-stretch overflow-x-auto">
+        {GROUPS.map((group, index) => (
+          <Fragment key={group[0].href}>
+            {index > 0 && (
+              <span aria-hidden className="my-3.5 mx-1.5 w-px shrink-0 bg-border/70" />
+            )}
 
-                  return (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      aria-current={active ? "page" : undefined}
-                      className={cn(
-                        "group relative flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors",
-                        active
-                          ? "bg-primary/12 text-primary"
-                          : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
-                      )}
-                    >
+            {group.map((link) => {
+              const Icon = link.icon;
+              const active = isActive(link);
+              const count = link.badgeKey ? badges[link.badgeKey] : 0;
+
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "relative flex h-12 shrink-0 items-center gap-2 px-3 text-sm font-medium transition-colors",
+                    active ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {active && (
+                    <>
                       <span
-                        className={cn(
-                          "absolute inset-y-1.5 left-0 w-0.5 rounded-full bg-primary transition-opacity",
-                          active ? "opacity-100" : "opacity-0"
-                        )}
+                        aria-hidden
+                        className="absolute inset-x-1 bottom-0 top-1.5 rounded-t-lg bg-primary/10"
                       />
-                      <Icon className="size-4 shrink-0" />
-                      <span className="flex-1 truncate">{link.label}</span>
-                      {count > 0 && (
-                        <span className="grid min-w-5 shrink-0 place-items-center rounded-full bg-amber-500/15 px-1.5 py-0.5 font-mono text-[10px] font-semibold tabular-nums text-amber-400 ring-1 ring-inset ring-amber-500/25">
-                          {count}
-                        </span>
-                      )}
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
-      </nav>
+                      <span
+                        aria-hidden
+                        className="absolute inset-x-2 bottom-0 h-0.5 rounded-t-full bg-gradient-to-r from-primary to-accent"
+                      />
+                    </>
+                  )}
 
-      <nav className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 lg:hidden" aria-label="Admin">
-        {ALL_LINKS.map((link) => {
-          const Icon = link.icon;
-          const active = isActive(link);
-          const count = countFor(link);
+                  <Icon className="relative size-4 shrink-0" />
+                  <span className="relative whitespace-nowrap">{link.label}</span>
 
-          return (
-            <Link
-              key={link.href}
-              href={link.href}
-              aria-current={active ? "page" : undefined}
-              className={cn(
-                "flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
-                active
-                  ? "border-primary/60 bg-primary/15 text-primary"
-                  : "border-border/60 bg-card/60 text-muted-foreground"
-              )}
-            >
-              <Icon className="size-3.5" />
-              {link.label}
-              {count > 0 && (
-                <span className="rounded-full bg-amber-500/20 px-1.5 font-mono text-[10px] tabular-nums text-amber-400">
-                  {count}
-                </span>
-              )}
-            </Link>
-          );
-        })}
-      </nav>
-    </>
+                  {count > 0 && (
+                    <span className="relative grid min-w-5 place-items-center rounded-full bg-amber-500/15 px-1.5 py-0.5 font-mono text-[10px] font-semibold tabular-nums text-amber-400 ring-1 ring-inset ring-amber-500/25">
+                      {count}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+          </Fragment>
+        ))}
+      </div>
+    </nav>
   );
 }

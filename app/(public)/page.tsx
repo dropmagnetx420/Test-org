@@ -4,6 +4,7 @@ import { Flame, Radio } from "lucide-react";
 import { Hero } from "@/components/landing/hero";
 import { SportsNav } from "@/components/landing/sports-nav";
 import { MarketSection } from "@/components/landing/market-section";
+import { EarnCta } from "@/components/landing/earn-cta";
 import { Stats } from "@/components/landing/stats";
 import { Faq } from "@/components/landing/faq";
 import { Partners } from "@/components/landing/partners";
@@ -89,6 +90,8 @@ export default async function HomePage() {
       <Suspense fallback={<MarketGridSkeleton />}>
         <TrendingMarkets />
       </Suspense>
+
+      <EarnCta />
 
       <Stats
         totalVolume={stats.totalVolume}
