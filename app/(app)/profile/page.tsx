@@ -53,22 +53,22 @@ export default async function ProfilePage() {
             </p>
           </div>
 
-          <dl className="grid grid-cols-3 gap-4 text-center">
+          <dl className="grid grid-cols-3 gap-2 text-center sm:gap-4">
             <div>
               <dt className="text-[11px] uppercase tracking-wide text-muted-foreground">Trades</dt>
-              <dd className="font-mono text-lg font-semibold tabular-nums">
+              <dd className="font-mono text-base font-semibold tabular-nums sm:text-lg">
                 {profile.total_trades.toLocaleString()}
               </dd>
             </div>
             <div>
               <dt className="text-[11px] uppercase tracking-wide text-muted-foreground">Volume</dt>
-              <dd className="font-mono text-lg font-semibold tabular-nums">
+              <dd className="font-mono text-base font-semibold tabular-nums sm:text-lg">
                 {formatCurrency(profile.total_volume)}
               </dd>
             </div>
             <div>
               <dt className="text-[11px] uppercase tracking-wide text-muted-foreground">Won</dt>
-              <dd className="font-mono text-lg font-semibold tabular-nums text-emerald-400">
+              <dd className="font-mono text-base font-semibold tabular-nums text-emerald-400 sm:text-lg">
                 {formatCurrency(profile.total_won)}
               </dd>
             </div>

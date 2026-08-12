@@ -259,6 +259,31 @@
     padding-right: env(safe-area-inset-right);
   }
 
+  /**
+   * Promo card in 3D. The perspective sits on the stage rather than the card so
+   * the depth layers inside the card parallax against it while it tilts.
+   */
+  .promo-stage {
+    perspective: 1500px;
+    perspective-origin: 50% 40%;
+  }
+
+  .promo-card {
+    transform-style: preserve-3d;
+    transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform;
+  }
+
+  /* Bevelled lip plus a cast shadow, so the card reads as lifted off the page. */
+  .promo-edge {
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 100% / 0.16),
+      inset 0 -1px 0 hsl(240 40% 3% / 0.5),
+      0 2px 4px hsl(240 40% 3% / 0.5),
+      0 14px 30px -12px hsl(var(--primary) / 0.5),
+      0 34px 64px -28px hsl(240 60% 2% / 0.9);
+  }
+
   /** Light sweep across a promo surface. Pseudo-element so it never takes layout. */
   .sheen::after {
     content: "";
@@ -295,6 +320,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .aurora, .sheen::after { animation: none !important }
+  .promo-card { transform: none !important }
 }
 
 @media (prefers-reduced-motion: reduce) {

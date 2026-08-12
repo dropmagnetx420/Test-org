@@ -58,8 +58,8 @@ export function SiteHeader({
         className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent"
       />
 
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="shrink-0" aria-label={`${siteName ?? "NextGen Predict"} home`}>
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-4 sm:gap-4 sm:px-6 lg:px-8">
+        <Link href="/" className="min-w-0 shrink" aria-label={`${siteName ?? "NextGen Predict"} home`}>
           <Logo siteName={siteName} />
         </Link>
 
@@ -88,14 +88,14 @@ export function SiteHeader({
           })}
         </nav>
 
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
           <EarnPill />
           {account}
 
           <Button
             variant="ghost"
-            size="icon-sm"
-            className="md:hidden"
+            size="icon"
+            className="-me-1 size-9 md:hidden"
             onClick={() => setOpen((v) => !v)}
             aria-label="Toggle navigation"
             aria-expanded={open}
@@ -150,7 +150,7 @@ function EarnPill() {
   return (
     <Link
       href="/earn"
-      className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-amber-500/40 bg-gradient-to-r from-amber-500/15 to-primary/15 px-2.5 py-1.5 text-xs font-semibold text-amber-300 transition-colors hover:border-amber-400/70 hover:text-amber-200 sm:px-3"
+      className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-amber-500/40 bg-gradient-to-r from-amber-500/15 to-primary/15 px-2 py-1.5 text-[11px] font-semibold text-amber-300 transition-colors hover:border-amber-400/70 hover:text-amber-200 sm:px-3 sm:text-xs"
     >
       <Coins className="size-3.5" />
       Earn

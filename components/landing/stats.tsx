@@ -31,16 +31,18 @@ export function Stats({ totalVolume, totalTrades, totalUsers, resolvedMarkets }:
           </div>
         </FadeIn>
 
-        <StaggerGrid className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <StaggerGrid className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           {items.map(({ icon: Icon, label, value }) => (
             <StaggerItem key={label}>
-              <div className="glass relative overflow-hidden rounded-xl p-6 text-center">
+              <div className="glass relative overflow-hidden rounded-xl p-4 text-center sm:p-6">
                 <div className="pointer-events-none absolute -right-8 -top-8 size-24 rounded-full bg-primary/20 blur-2xl" />
-                <div className="mx-auto mb-3 grid size-11 place-items-center rounded-xl bg-gradient-to-br from-primary/25 to-cyan-500/10 text-primary">
+                <div className="mx-auto mb-3 grid size-10 place-items-center rounded-xl bg-gradient-to-br from-primary/25 to-cyan-500/10 text-primary sm:size-11">
                   <Icon className="size-5" />
                 </div>
-                <p className="font-mono text-2xl font-semibold tabular-nums sm:text-3xl">{value}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{label}</p>
+                <p className="font-mono text-lg font-semibold tabular-nums sm:text-2xl lg:text-3xl">
+                  {value}
+                </p>
+                <p className="mt-1 text-[11px] text-muted-foreground sm:text-xs">{label}</p>
               </div>
             </StaggerItem>
           ))}

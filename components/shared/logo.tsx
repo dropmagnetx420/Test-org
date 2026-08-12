@@ -35,14 +35,14 @@ export function Logo({
 }) {
   const dims = {
     sm: { box: "size-8", text: "text-lg", px: 32 },
-    md: { box: "size-10", text: "text-xl", px: 40 },
+    md: { box: "size-9 sm:size-10", text: "text-lg sm:text-xl", px: 40 },
     lg: { box: "size-14", text: "text-3xl", px: 56 },
   }[size];
 
   const [first, rest] = splitName(siteName);
 
   return (
-    <div className={cn("flex items-center gap-2.5", className)}>
+    <div className={cn("flex min-w-0 items-center gap-2 sm:gap-2.5", className)}>
       <Image
         src={BRAND_MARK}
         alt={siteName}
@@ -57,7 +57,7 @@ export function Logo({
       />
 
       {showText && (
-        <span className={cn("font-bold tracking-tight leading-none", dims.text)}>
+        <span className={cn("truncate font-bold tracking-tight leading-none", dims.text)}>
           <span className="text-gradient">{first}</span>
           {rest && <span className="text-foreground">{rest}</span>}
         </span>

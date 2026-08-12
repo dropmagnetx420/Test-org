@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Gift, Sparkles, X } from "lucide-react";
@@ -12,6 +12,10 @@ import type { PromoBanner } from "@/types/database";
 
 const SLIDE_MS = 6000;
 const SWIPE_PX = 50;
+/** Caps on the card's lean, in degrees. Past ~10deg the text starts to skew. */
+const DRAG_TILT = 10;
+const HOVER_TILT_Y = 7;
+const HOVER_TILT_X = 4;
 
 export function PromoBanners({
   banners,
@@ -34,6 +38,31 @@ export function PromoBanners({
     return () => clearTimeout(timer);
   }, [index, paused, count]);
 
+  /**
+   * The tilt is written straight to the node: a pointermove that went through
+   * state would re-render every slide on each frame of a swipe.
+   */
+  const cardRef = useRef<HTMLDivElement>(null);
+  const stillRef = useRef(false);
+  const hoverRef = useRef(false);
+
+  useEffect(() => {
+    stillRef.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    /**
+     * Touch browsers synthesize a mouse event burst after a tap, and no
+     * mouseleave ever follows it. Taking those would leave the card tilted and
+     * the autoplay paused for good, so hover behaviour is mice only.
+     */
+    hoverRef.current = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  }, []);
+
+  const tilt = useCallback((x: number, y: number, animated = true) => {
+    const card = cardRef.current;
+    if (!card || stillRef.current) return;
+    card.style.transition = animated ? "" : "none";
+    card.style.transform = `rotateX(${x}deg) rotateY(${y}deg)`;
+  }, []);
+
   // A horizontal drag must not fire the link overlay it started on.
   const swipe = useRef({ x: 0, moved: false, active: false });
 
@@ -44,7 +73,10 @@ export function PromoBanners({
 
   function onPointerMove(event: React.PointerEvent) {
     if (!swipe.current.active) return;
-    if (Math.abs(event.clientX - swipe.current.x) > 10) swipe.current.moved = true;
+    const dx = event.clientX - swipe.current.x;
+    if (Math.abs(dx) > 10) swipe.current.moved = true;
+    // Leaning into the drag is what makes a swipe feel like turning a card.
+    tilt(0, Math.max(-DRAG_TILT, Math.min(DRAG_TILT, dx / 12)), false);
   }
 
   function onPointerUp(event: React.PointerEvent) {
@@ -52,6 +84,7 @@ export function PromoBanners({
     const dx = event.clientX - swipe.current.x;
     swipe.current.active = false;
     setPaused(false);
+    tilt(0, 0);
     if (count < 2 || Math.abs(dx) < SWIPE_PX) return;
     setIndex((i) => (dx < 0 ? (i + 1) % count : (i - 1 + count) % count));
   }
@@ -61,6 +94,15 @@ export function PromoBanners({
     event.preventDefault();
     event.stopPropagation();
     swipe.current.moved = false;
+  }
+
+  /** Pointer-follow tilt for mice. Touch drags are handled by the swipe above. */
+  function onHoverMove(event: React.MouseEvent<HTMLElement>) {
+    if (!hoverRef.current || swipe.current.active) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    const px = (event.clientX - rect.left) / rect.width - 0.5;
+    const py = (event.clientY - rect.top) / rect.height - 0.5;
+    tilt(-py * HOVER_TILT_X * 2, px * HOVER_TILT_Y * 2, false);
   }
 
   if (hidden || count === 0) return null;
@@ -83,57 +125,78 @@ export function PromoBanners({
     <section
       aria-label="Promotions"
       aria-roledescription="carousel"
-      className="group/promo relative"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
+      className="group/promo promo-stage relative"
+      onMouseEnter={() => {
+        if (hoverRef.current) setPaused(true);
+      }}
+      onMouseLeave={() => {
+        if (!hoverRef.current) return;
+        setPaused(false);
+        tilt(0, 0);
+      }}
+      onMouseMove={onHoverMove}
     >
-      <div className="border-gradient sheen relative overflow-hidden rounded-2xl bg-card/40 shadow-[0_8px_40px_-16px_hsl(var(--primary)/0.55)] backdrop-blur-xl">
-        <div
-          className="touch-pan-y"
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          onPointerCancel={onPointerUp}
-          onClickCapture={onClickCapture}
-        >
+      <div ref={cardRef} className="promo-card relative">
+        {/* Cast shadow on the "floor". Set back in Z so the tilt parallaxes it. */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-x-8 -bottom-3 h-8 rounded-[50%] bg-primary/40 blur-2xl [transform:translateZ(-80px)]"
+        />
+
+        <div className="promo-edge border-gradient sheen relative overflow-hidden rounded-2xl bg-card/40 backdrop-blur-xl">
           <div
-            className="flex items-stretch transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
-            style={{ transform: `translate3d(-${index * 100}%, 0, 0)` }}
+            className="select-none touch-pan-y"
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onPointerCancel={onPointerUp}
+            onClickCapture={onClickCapture}
           >
-            {banners.map((banner, i) => (
-              <Slide
-                key={banner.id}
-                banner={banner}
-                eager={i === 0}
-                hidden={i !== index}
-                isAuthenticated={isAuthenticated}
-                isClaimed={claimed.includes(banner.id)}
-                pending={pending}
-                onClaim={onClaim}
-              />
-            ))}
+            <div
+              className="flex items-stretch transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
+              style={{ transform: `translate3d(-${index * 100}%, 0, 0)` }}
+            >
+              {banners.map((banner, i) => (
+                <Slide
+                  key={banner.id}
+                  banner={banner}
+                  eager={i === 0}
+                  active={i === index}
+                  isAuthenticated={isAuthenticated}
+                  isClaimed={claimed.includes(banner.id)}
+                  pending={pending}
+                  onClaim={onClaim}
+                />
+              ))}
+            </div>
           </div>
+
+          {/* Glass highlight along the top lip, above the artwork. */}
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-white/12 to-transparent"
+          />
+
+          <button
+            type="button"
+            onClick={() => setHidden(true)}
+            aria-label="Hide offers"
+            className="absolute end-2 top-2 z-30 grid size-9 place-items-center rounded-full bg-black/40 text-white/75 backdrop-blur-md transition-colors hover:bg-black/65 hover:text-white"
+          >
+            <X className="size-4" />
+          </button>
+
+          {count > 1 && (
+            <>
+              <CarouselArrow side="start" onClick={() => step(-1)} />
+              <CarouselArrow side="end" onClick={() => step(1)} />
+            </>
+          )}
         </div>
-
-        <button
-          type="button"
-          onClick={() => setHidden(true)}
-          aria-label="Hide offers"
-          className="absolute end-2 top-2 z-30 grid size-7 place-items-center rounded-full bg-black/35 text-white/70 backdrop-blur-md transition-colors hover:bg-black/60 hover:text-white"
-        >
-          <X className="size-3.5" />
-        </button>
-
-        {count > 1 && (
-          <>
-            <CarouselArrow side="start" onClick={() => step(-1)} />
-            <CarouselArrow side="end" onClick={() => step(1)} />
-          </>
-        )}
       </div>
 
       {count > 1 && (
-        <div className="mt-2.5 flex justify-center gap-1.5">
+        <div className="mt-3 flex justify-center gap-1">
           {banners.map((banner, i) => (
             <button
               key={banner.id}
@@ -141,13 +204,17 @@ export function PromoBanners({
               onClick={() => setIndex(i)}
               aria-label={`Show offer ${i + 1} of ${count}`}
               aria-current={i === index}
-              className={cn(
-                "h-1.5 rounded-full transition-all duration-300",
-                i === index
-                  ? "w-6 bg-gradient-to-r from-violet-500 to-cyan-400"
-                  : "w-1.5 bg-border hover:bg-muted-foreground"
-              )}
-            />
+              className="grid size-7 place-items-center"
+            >
+              <span
+                className={cn(
+                  "h-1.5 rounded-full transition-all duration-300",
+                  i === index
+                    ? "w-6 bg-gradient-to-r from-violet-500 to-cyan-400"
+                    : "w-1.5 bg-border"
+                )}
+              />
+            </button>
           ))}
         </div>
       )}
@@ -176,7 +243,7 @@ function CarouselArrow({ side, onClick }: { side: "start" | "end"; onClick: () =
 function Slide({
   banner,
   eager,
-  hidden,
+  active,
   isAuthenticated,
   isClaimed,
   pending,
@@ -184,7 +251,7 @@ function Slide({
 }: {
   banner: PromoBanner;
   eager: boolean;
-  hidden: boolean;
+  active: boolean;
   isAuthenticated: boolean;
   isClaimed: boolean;
   pending: boolean;
@@ -203,10 +270,16 @@ function Slide({
 
   return (
     <article
-      aria-hidden={hidden}
+      aria-hidden={!active}
+      // Without this the CTA and link overlay of every off-screen slide stay in
+      // the tab order, so keyboard focus disappears into the cropped ones.
+      inert={!active}
       aria-label={banner.title}
+      // Off-screen slides hang back, so a swipe brings the next one forward.
+      style={active ? undefined : { transform: "scale(0.92)", opacity: 0.45 }}
       className={cn(
-        "relative w-full shrink-0 overflow-hidden",
+        "relative grid w-full shrink-0 overflow-hidden",
+        "transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
         onImage
           ? "bg-secondary"
           : cn(
@@ -215,6 +288,17 @@ function Slide({
             )
       )}
     >
+      {/**
+       * The slide takes its height from its width, so artwork keeps its shape at
+       * every screen size instead of being cropped into a thin strip on a phone.
+       * The sizer shares one grid cell with the copy, so a long title on a narrow
+       * phone can still push the card taller rather than being clipped by it.
+       */}
+      <div
+        aria-hidden
+        className="col-start-1 row-start-1 aspect-[16/10] sm:aspect-[21/9] lg:aspect-[1000/260]"
+      />
+
       {banner.image_url && (
         <>
           <Image
@@ -227,7 +311,9 @@ function Slide({
             className="select-none object-cover"
             draggable={false}
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/25" />
+          {/* Copy sits at the bottom on phones and to the left on wide screens,
+              so the scrim has to follow it. */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/10 sm:bg-gradient-to-r sm:from-black/85 sm:via-black/45 sm:to-transparent" />
         </>
       )}
 
@@ -235,11 +321,10 @@ function Slide({
         <Link href={banner.link_url} className="absolute inset-0 z-10" aria-label={banner.title} />
       )}
 
-      {/* Stacks on phones so nothing truncates; becomes a wide row from `sm`. */}
       <div
         className={cn(
-          "relative flex min-h-[7.5rem] flex-col gap-3 p-4 pe-11 sm:min-h-[9rem] sm:flex-row sm:items-center sm:gap-5 sm:p-6 sm:pe-14",
-          onImage && "text-white"
+          "col-start-1 row-start-1 relative flex flex-col gap-2.5 p-4 pe-12 sm:flex-row sm:items-center sm:gap-5 sm:p-6 sm:pe-14",
+          onImage ? "justify-end text-white" : "justify-center"
         )}
       >
         <div
@@ -252,7 +337,7 @@ function Slide({
         </div>
 
         <div className="min-w-0 flex-1">
-          <h3 className="text-pretty text-[15px] font-bold leading-snug tracking-tight sm:text-xl">
+          <h3 className="line-clamp-2 text-pretty text-base font-bold leading-snug tracking-tight sm:text-xl lg:text-2xl">
             {banner.title}
           </h3>
 
@@ -260,7 +345,7 @@ function Slide({
             <p
               className={cn(
                 "mt-1 line-clamp-2 text-pretty text-xs leading-relaxed sm:text-sm",
-                onImage ? "text-white/75" : "text-muted-foreground"
+                onImage ? "text-white/80" : "text-muted-foreground"
               )}
             >
               {banner.subtitle}

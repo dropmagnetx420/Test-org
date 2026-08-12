@@ -24,12 +24,14 @@ const buttonVariants = cva(
         glass: "glass hover:bg-card/75 hover:border-primary/40",
       },
       size: {
-        default: "h-10 px-4 py-2",
+        // Taller on phones to stay a comfortable tap target and to line up with
+        // the inputs, which are also bumped to h-11 there.
+        default: "h-11 px-4 py-2 sm:h-10",
         sm: "h-9 rounded-md px-3 text-xs",
-        lg: "h-12 rounded-xl px-8 text-base",
-        xl: "h-14 rounded-xl px-10 text-base",
-        icon: "size-10",
-        "icon-sm": "size-8 rounded-md",
+        lg: "h-12 rounded-xl px-6 text-base sm:px-8",
+        xl: "h-14 rounded-xl px-6 text-base sm:px-10",
+        icon: "size-11 sm:size-10",
+        "icon-sm": "size-9 rounded-md sm:size-8",
       },
     },
     defaultVariants: { variant: "default", size: "default" },

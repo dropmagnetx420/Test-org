@@ -101,7 +101,7 @@ export function MarketFilters() {
 
       <div className="flex flex-wrap gap-2">
         <Select value={status} onValueChange={(v) => update("status", v)}>
-          <SelectTrigger className="w-[170px]">
+          <SelectTrigger className="w-[calc(50%-0.25rem)] min-w-0 sm:w-[170px]">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -114,7 +114,7 @@ export function MarketFilters() {
         </Select>
 
         <Select value={sort} onValueChange={(v) => update("sort", v)}>
-          <SelectTrigger className="w-[170px]">
+          <SelectTrigger className="w-[calc(50%-0.25rem)] min-w-0 sm:w-[170px]">
             <SelectValue placeholder="Sort" />
           </SelectTrigger>
           <SelectContent>

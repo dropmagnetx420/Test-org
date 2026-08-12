@@ -77,18 +77,18 @@ export function Hero({
         </ul>
 
         <dl
-          className="reveal mx-auto mt-14 grid max-w-2xl grid-cols-3 gap-3"
+          className="reveal mx-auto mt-12 grid max-w-2xl grid-cols-3 gap-2 sm:mt-14 sm:gap-3"
           style={{ animationDelay: "260ms" }}
         >
           {stats.map((stat) => (
             <div
               key={stat.label}
-              className="glass rounded-xl px-3 py-4 transition-colors hover:border-primary/40"
+              className="glass rounded-xl px-2 py-3 transition-colors hover:border-primary/40 sm:px-3 sm:py-4"
             >
-              <dd className="font-mono text-xl font-semibold tabular-nums sm:text-2xl">
+              <dd className="font-mono text-lg font-semibold tabular-nums sm:text-2xl">
                 {stat.value}
               </dd>
-              <dt className="mt-1 text-[11px] uppercase tracking-wide text-muted-foreground">
+              <dt className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground sm:text-[11px]">
                 {stat.label}
               </dt>
             </div>

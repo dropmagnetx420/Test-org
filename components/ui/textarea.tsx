@@ -5,7 +5,8 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, React.ComponentProps<"tex
   ({ className, ...props }, ref) => (
     <textarea
       className={cn(
-        "flex min-h-20 w-full rounded-lg border border-input bg-secondary/40 px-3 py-2 text-sm transition-colors",
+        // 16px on phones: iOS Safari zooms the whole page in on focus below that.
+        "flex min-h-20 w-full rounded-lg border border-input bg-secondary/40 px-3 py-2 text-base transition-colors sm:text-sm",
         "placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-primary/60",
         "disabled:cursor-not-allowed disabled:opacity-50 resize-y",
         className
