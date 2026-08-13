@@ -75,7 +75,9 @@ export function PromoBanners({
     if (!swipe.current.active) return;
     const dx = event.clientX - swipe.current.x;
     if (Math.abs(dx) > 10) swipe.current.moved = true;
-    // Leaning into the drag is what makes a swipe feel like turning a card.
+    // Leaning into the drag is a mouse affordance; on a phone the 3D lean reads
+    // as jitter, so touch gets a clean flat swipe and keeps only the navigation.
+    if (!hoverRef.current) return;
     tilt(0, Math.max(-DRAG_TILT, Math.min(DRAG_TILT, dx / 12)), false);
   }
 

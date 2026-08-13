@@ -146,6 +146,9 @@
   html {
     scroll-behavior: smooth;
     -webkit-tap-highlight-color: transparent;
+    /* `clip`, not `hidden`: it stops any stray sideways scroll without turning
+       the page into a scroll container, so the sticky header keeps working. */
+    overflow-x: clip;
   }
 
   body {
@@ -153,7 +156,7 @@
     color: hsl(var(--foreground));
     font-feature-settings: "rlig" 1, "calt" 1;
     -webkit-font-smoothing: antialiased;
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 
   ::selection {
