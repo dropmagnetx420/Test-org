@@ -1,21 +1,55 @@
-import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 /**
- * The emblem crop, not the full seal: the wordmark inside the seal is illegible
- * below ~64px and would compete with the `siteName` text rendered beside it.
+ * Inline vector mark — a rising trend line piercing an arrowhead, on a
+ * violet→cyan→fuchsia disc. Kept inline (not an <Image>) so it is pixel-sharp
+ * from a 32px favicon to hero sizes, carries no raster payload, and avoids the
+ * `sharp` blur-placeholder path that has no arm64 binding at build time.
  *
- * Referenced by path rather than statically imported — a static import makes
- * webpack generate a blur placeholder through `sharp`, which has no native
- * binding on arm64 and breaks the build there. Dimensions are fixed anyway.
- *
- * Deliberately the only source of the mark: an operator-uploadable logo meant
- * every deployment carried a stale override in `site_settings.logo_url` that
- * silently beat the shipped art.
+ * The gradient id is fixed: identical <linearGradient> defs may repeat when the
+ * logo renders more than once per page, and every browser resolves url(#id) to
+ * the first match, so repeated identical ids render correctly.
  */
-const BRAND_MARK = "/logo-mark.png";
+function BrandMark({ px, className }: { px: number; className?: string }) {
+  return (
+    <svg
+      width={px}
+      height={px}
+      viewBox="0 0 40 40"
+      role="img"
+      aria-hidden="true"
+      className={cn("shrink-0", className)}
+    >
+      <defs>
+        <linearGradient id="ngpMark" x1="5" y1="4" x2="35" y2="37" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#933df5" />
+          <stop offset="0.52" stopColor="#06d0f9" />
+          <stop offset="1" stopColor="#f53dc7" />
+        </linearGradient>
+      </defs>
+      <circle cx="20" cy="20" r="20" fill="url(#ngpMark)" />
+      <circle cx="20" cy="20" r="19" fill="none" stroke="#ffffff" strokeOpacity="0.16" />
+      <path
+        d="M9 26.5 16.5 20 22.5 23 30.5 12"
+        fill="none"
+        stroke="#ffffff"
+        strokeWidth="3.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M23.5 12 H30.5 V19"
+        fill="none"
+        stroke="#ffffff"
+        strokeWidth="3.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
 
-/** First word is gradient-filled, the rest plain — matches the original mark. */
+/** First word is gradient-filled, the rest plain — matches the mark. */
 function splitName(name: string): [string, string] {
   const trimmed = name.trim();
   const space = trimmed.indexOf(" ");
@@ -43,18 +77,7 @@ export function Logo({
 
   return (
     <div className={cn("flex min-w-0 items-center gap-2 sm:gap-2.5", className)}>
-      <Image
-        src={BRAND_MARK}
-        alt={siteName}
-        width={dims.px}
-        height={dims.px}
-        quality={82}
-        priority
-        className={cn(
-          "shrink-0 rounded-full object-contain ring-1 ring-inset ring-amber-500/25",
-          dims.box
-        )}
-      />
+      <BrandMark px={dims.px} className={cn("rounded-full ring-1 ring-inset ring-white/10", dims.box)} />
 
       {showText && (
         <span className={cn("truncate font-bold tracking-tight leading-none", dims.text)}>

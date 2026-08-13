@@ -13,11 +13,12 @@ export const contentType = "image/png";
  * critical path. Every element needs an explicit `display: flex`.
  *
  * The mark is inlined as a data URL because Satori has no request context to
- * resolve `/logo-mark.png` against during a static prerender.
+ * resolve `/logo-mark.svg` against during a static prerender; resvg rasterises
+ * the vector (gradient and all) at render time.
  */
 export default async function OpengraphImage() {
-  const mark = await readFile(join(process.cwd(), "public/logo-mark.png"));
-  const markSrc = `data:image/png;base64,${mark.toString("base64")}`;
+  const mark = await readFile(join(process.cwd(), "public/logo-mark.svg"), "utf8");
+  const markSrc = `data:image/svg+xml;base64,${Buffer.from(mark).toString("base64")}`;
 
   return new ImageResponse(
     (
@@ -37,18 +38,13 @@ export default async function OpengraphImage() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 24, marginBottom: 42 }}>
-          <div
-            style={{
-              display: "flex",
-              width: 88,
-              height: 88,
-              borderRadius: 44,
-              border: "2px solid rgba(217,153,84,0.55)",
-              boxShadow: "0 0 0 8px rgba(217,153,84,0.08)",
-            }}
-          >
-            <img src={markSrc} width={84} height={84} alt="" style={{ borderRadius: 42 }} />
-          </div>
+          <img
+            src={markSrc}
+            width={92}
+            height={92}
+            alt=""
+            style={{ borderRadius: 46, boxShadow: "0 0 0 6px rgba(147,61,245,0.14)" }}
+          />
           <div style={{ display: "flex", fontSize: 44, fontWeight: 700, letterSpacing: -1 }}>
             {SITE_NAME}
           </div>
