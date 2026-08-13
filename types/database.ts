@@ -152,6 +152,12 @@ export interface MarketOption {
   created_at: string;
 }
 
+export interface MarketOddsPoint {
+  option_id: string;
+  odds: string;
+  recorded_at: string;
+}
+
 export interface Trade {
   id: string;
   user_id: string;

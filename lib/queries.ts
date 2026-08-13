@@ -10,6 +10,7 @@ import type {
   EarnTaskWithState,
   Market,
   MarketOption,
+  MarketOddsPoint,
   Paginated,
   Partner,
   PromoBanner,
@@ -250,6 +251,26 @@ export const getMarketOptions = cached(
     return (data as MarketOption[]) ?? [];
   },
   ["market-options"],
+  { revalidate: 15, tags: [CACHE_TAGS.MARKETS] }
+);
+
+/**
+ * Odds snapshots for a market's price chart, oldest first. Capped so a very
+ * heavily traded market can't return an unbounded series to the client; the
+ * newest window is what the chart shows anyway.
+ */
+export const getMarketOddsHistory = cached(
+  async (marketId: string): Promise<MarketOddsPoint[]> => {
+    const supabase = createPublicClient();
+    const { data } = await supabase
+      .from("market_odds_history")
+      .select("option_id,odds,recorded_at")
+      .eq("market_id", marketId)
+      .order("recorded_at", { ascending: false })
+      .limit(500);
+    return ((data as MarketOddsPoint[]) ?? []).reverse();
+  },
+  ["market-odds-history"],
   { revalidate: 15, tags: [CACHE_TAGS.MARKETS] }
 );
 

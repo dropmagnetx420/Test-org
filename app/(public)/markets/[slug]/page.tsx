@@ -9,11 +9,12 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { Countdown } from "@/components/shared/countdown";
 import { TradePanel } from "@/components/markets/trade-panel";
 import { CancelTradeButton } from "@/components/markets/cancel-trade-button";
+import { MarketChart } from "@/components/markets/market-chart";
 import { EmptyState } from "@/components/shared/empty-state";
 import { AdSlot } from "@/components/shared/ad-slot";
 import { createClient } from "@/lib/supabase/server";
 import { getUser, getWallet, getSettings } from "@/lib/auth";
-import { getMarketBySlug, getMarketOptions } from "@/lib/queries";
+import { getMarketBySlug, getMarketOptions, getMarketOddsHistory } from "@/lib/queries";
 import { SPORTS, SITE_NAME } from "@/lib/constants";
 import { cn, formatCurrency, formatCompact, toNumber } from "@/lib/utils";
 import type { Trade } from "@/types/database";
@@ -69,11 +70,12 @@ export default async function MarketDetailPage({ params }: PageProps) {
   const market = await getMarketBySlug(slug);
   if (!market) notFound();
 
-  const [user, wallet, settings, options] = await Promise.all([
+  const [user, wallet, settings, options, oddsHistory] = await Promise.all([
     getUser(),
     getWallet(),
     getSettings(),
     getMarketOptions(market.id),
+    getMarketOddsHistory(market.id),
   ]);
 
   let myTrades: Trade[] = [];
@@ -192,6 +194,18 @@ export default async function MarketDetailPage({ params }: PageProps) {
               ))}
             </div>
           </div>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <BarChart3 className="size-4" />
+                Price history
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <MarketChart options={options} history={oddsHistory} />
+            </CardContent>
+          </Card>
 
           <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {[
