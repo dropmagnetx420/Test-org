@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState, useTransition } from "react";
-import { AlertCircle, Loader2, RefreshCw, Upload, Wallet as WalletIcon } from "lucide-react";
+import { AlertCircle, Loader2, RefreshCw, Wallet as WalletIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -16,9 +16,9 @@ import {
 import { toast } from "@/components/ui/sonner";
 import { SubmitButton } from "@/components/shared/submit-button";
 import { CopyButton } from "@/components/shared/copy-button";
-import { getDepositAddress, submitDeposit, uploadReceipt } from "@/lib/actions/wallet";
+import { getDepositAddress, submitDeposit } from "@/lib/actions/wallet";
 import { ASSETS_BY_NETWORK, NETWORKS, type NetworkValue } from "@/lib/constants";
-import { formatCurrency, truncateAddress } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 import type { ActionResult, DepositAddress } from "@/types/database";
 
 export function DepositForm({ minDeposit, bonusPercent }: { minDeposit: string; bonusPercent: string }) {
@@ -26,8 +26,6 @@ export function DepositForm({ minDeposit, bonusPercent }: { minDeposit: string; 
   const [asset, setAsset] = useState("USDG");
   const [address, setAddress] = useState<DepositAddress | null>(null);
   const [loadingAddress, startLoading] = useTransition();
-  const [receiptUrl, setReceiptUrl] = useState("");
-  const [uploading, setUploading] = useState(false);
   const [amount, setAmount] = useState("");
 
   const [state, formAction] = useActionState<ActionResult | null, FormData>(submitDeposit, null);
@@ -59,7 +57,6 @@ export function DepositForm({ minDeposit, bonusPercent }: { minDeposit: string; 
     setSeen(state);
     if (state?.success) {
       setAmount("");
-      setReceiptUrl("");
     }
   }
 
@@ -68,26 +65,6 @@ export function DepositForm({ minDeposit, bonusPercent }: { minDeposit: string; 
     setNetwork(next);
     const validAssets = ASSETS_BY_NETWORK[next];
     if (!validAssets.includes(asset)) setAsset(validAssets[0]);
-  }
-
-  async function onReceiptChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    setUploading(true);
-    const fd = new FormData();
-    fd.set("file", file);
-
-    const result = await uploadReceipt(fd);
-    setUploading(false);
-
-    if (result.success && result.data) {
-      setReceiptUrl(result.data.path);
-      toast.success("Receipt attached.");
-    } else {
-      toast.error(result.error ?? "Upload failed.");
-      event.target.value = "";
-    }
   }
 
   const bonus = (Number(amount || 0) * Number(bonusPercent || 0)) / 100;
@@ -202,7 +179,6 @@ export function DepositForm({ minDeposit, bonusPercent }: { minDeposit: string; 
             <input type="hidden" name="network" value={network} />
             <input type="hidden" name="asset" value={asset} />
             <input type="hidden" name="depositAddress" value={address?.address ?? ""} />
-            <input type="hidden" name="receiptUrl" value={receiptUrl} />
 
             <div className="space-y-2">
               <Label htmlFor="amount">Amount (USDG)</Label>
@@ -246,34 +222,11 @@ export function DepositForm({ minDeposit, bonusPercent }: { minDeposit: string; 
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="receipt">
-                Receipt screenshot <span className="text-muted-foreground">(optional)</span>
-              </Label>
-              <div className="flex items-center gap-2">
-                <Input
-                  id="receipt"
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp,application/pdf"
-                  onChange={onReceiptChange}
-                  disabled={uploading}
-                  className="cursor-pointer file:mr-3 file:rounded file:border-0 file:bg-secondary file:px-2 file:py-1 file:text-xs"
-                />
-                {uploading && <Loader2 className="size-4 shrink-0 animate-spin text-primary" />}
-              </div>
-              {receiptUrl && (
-                <p className="flex items-center gap-1 text-xs text-emerald-400">
-                  <Upload className="size-3" />
-                  Attached: {truncateAddress(receiptUrl, 18, 8)}
-                </p>
-              )}
-            </div>
-
             <SubmitButton
               variant="gradient"
               size="lg"
               className="w-full"
-              disabled={!address || uploading}
+              disabled={!address}
               pendingText="Submitting…"
             >
               <WalletIcon className="size-4" />

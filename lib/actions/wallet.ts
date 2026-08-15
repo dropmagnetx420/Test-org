@@ -5,38 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getUser, rateLimit } from "@/lib/auth";
 import { ok, fail, parseOrFail, toActionError, formString, formNumber } from "@/lib/action-utils";
 import { depositSchema, withdrawSchema } from "@/lib/validations";
-import { STORAGE_BUCKETS } from "@/lib/constants";
 import type { ActionResult, DepositAddress, DepositRequest, WithdrawRequest } from "@/types/database";
-
-const MAX_RECEIPT_BYTES = 6 * 1024 * 1024;
-const RECEIPT_TYPES = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
-
-/**
- * Uploads a deposit receipt into the caller's own folder. The storage policy
- * requires the first path segment to equal auth.uid().
- */
-export async function uploadReceipt(fd: FormData): Promise<ActionResult<{ path: string }>> {
-  const user = await getUser();
-  if (!user) return fail("Please sign in to continue.");
-
-  const file = fd.get("file");
-  if (!(file instanceof File) || file.size === 0) return fail("Select a file to upload.");
-  if (file.size > MAX_RECEIPT_BYTES) return fail("File is too large. Maximum size is 6 MB.");
-  if (!RECEIPT_TYPES.includes(file.type)) {
-    return fail("Unsupported file type. Upload a JPG, PNG, WebP or PDF.");
-  }
-
-  const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
-  const path = `${user.id}/receipt-${Date.now()}.${ext}`;
-
-  const supabase = await createClient();
-  const { error } = await supabase.storage
-    .from(STORAGE_BUCKETS.RECEIPTS)
-    .upload(path, file, { upsert: false, contentType: file.type });
-
-  if (error) return fail("Upload failed. Please try again.");
-  return ok({ path });
-}
 
 export async function getDepositAddress(
   network: string,
@@ -72,7 +41,6 @@ export async function submitDeposit(
     asset: formString(fd, "asset"),
     txHash: formString(fd, "txHash"),
     depositAddress: formString(fd, "depositAddress"),
-    receiptUrl: formString(fd, "receiptUrl"),
   });
   if (!parsed.ok) return parsed.result;
 
@@ -98,7 +66,6 @@ export async function submitDeposit(
       asset: parsed.data.asset,
       tx_hash: parsed.data.txHash,
       deposit_address: parsed.data.depositAddress,
-      receipt_url: parsed.data.receiptUrl || null,
       status: "pending",
     })
     .select()

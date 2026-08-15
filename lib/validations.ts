@@ -115,7 +115,6 @@ export const depositSchema = z
     asset: z.string().trim().min(2).max(10),
     txHash,
     depositAddress: evmAddress,
-    receiptUrl: z.string().trim().max(500).optional().or(z.literal("")),
   })
   .refine((d) => assetForNetwork(d.network, d.asset), {
     message: "This asset is not supported on the selected network",
