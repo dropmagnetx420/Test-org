@@ -90,6 +90,7 @@ export default async function ReferralsPage({ searchParams }: PageProps) {
         <InviteCard
           code={profile.referral_code}
           commission={String(toNumber(settings.referral_commission_percent))}
+          signupReward={toNumber(settings.referral_signup_reward)}
         />
 
         <Card className="glass">

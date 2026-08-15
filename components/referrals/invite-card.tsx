@@ -1,13 +1,22 @@
 "use client";
 
-import { Share2 } from "lucide-react";
+import { Gift, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CopyButton } from "@/components/shared/copy-button";
 import { toast } from "@/components/ui/sonner";
 import { SITE_URL } from "@/lib/constants";
+import { formatCurrency } from "@/lib/utils";
 
-export function InviteCard({ code, commission }: { code: string; commission: string }) {
+export function InviteCard({
+  code,
+  commission,
+  signupReward = 0,
+}: {
+  code: string;
+  commission: string;
+  signupReward?: number;
+}) {
   const link = `${SITE_URL}/register?ref=${code}`;
 
   async function share() {
@@ -35,6 +44,19 @@ export function InviteCard({ code, commission }: { code: string; commission: str
       </CardHeader>
 
       <CardContent className="space-y-4">
+        {signupReward > 0 && (
+          <div className="flex items-start gap-2.5 rounded-lg border border-amber-500/30 bg-amber-500/[0.08] p-3">
+            <Gift className="mt-0.5 size-4 shrink-0 text-amber-300" />
+            <p className="text-xs text-amber-200/90">
+              Plus a{" "}
+              <span className="font-semibold text-amber-200">
+                {formatCurrency(signupReward)} USDG
+              </span>{" "}
+              bonus the first time a friend you invite makes a deposit.
+            </p>
+          </div>
+        )}
+
         <div className="space-y-2">
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             Your referral code

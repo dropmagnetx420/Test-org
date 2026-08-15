@@ -438,6 +438,7 @@ export interface SiteSettings {
   first_deposit_bonus_max: string;
   bonus_turnover_multiplier: string;
   referral_commission_percent: string;
+  referral_signup_reward: string;
   kyc_required_for_withdrawal: boolean;
   maintenance_mode: boolean;
   registration_enabled: boolean;

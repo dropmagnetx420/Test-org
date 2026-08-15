@@ -266,6 +266,7 @@ export const siteSettingsSchema = z.object({
   firstDepositBonusMax: z.number().min(0).max(1_000_000),
   bonusTurnoverMultiplier: z.number().min(0).max(100),
   referralCommissionPercent: z.number().min(0).max(50),
+  referralSignupReward: z.number().min(0).max(100_000),
   kycRequiredForWithdrawal: z.boolean(),
   maintenanceMode: z.boolean(),
   registrationEnabled: z.boolean(),

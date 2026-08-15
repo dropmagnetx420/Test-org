@@ -212,6 +212,14 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
           defaultValue={toNumber(settings.referral_commission_percent)}
           error={err?.referralCommissionPercent?.[0]}
         />
+        <Num
+          name="referralSignupReward"
+          label="Referral signup reward (USDG)"
+          step="0.01"
+          hint="Flat USDG paid to the referrer on a referred user's first approved deposit. 0 = off."
+          defaultValue={toNumber(settings.referral_signup_reward)}
+          error={err?.referralSignupReward?.[0]}
+        />
       </Section>
 
       <Section
