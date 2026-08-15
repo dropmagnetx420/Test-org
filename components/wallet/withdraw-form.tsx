@@ -25,6 +25,9 @@ interface WithdrawFormProps {
   bonus: string;
   turnoverRequired: string;
   turnoverCompleted: string;
+  totalDeposited: string;
+  totalWithdrawn: string;
+  locked: string;
   minWithdrawal: string;
   feePercent: string;
   kycRequired: boolean;
@@ -36,6 +39,9 @@ export function WithdrawForm({
   bonus,
   turnoverRequired,
   turnoverCompleted,
+  totalDeposited,
+  totalWithdrawn,
+  locked,
   minWithdrawal,
   feePercent,
   kycRequired,
@@ -84,7 +90,14 @@ export function WithdrawForm({
 
   const kycBlocked = kycRequired && kycStatus !== "approved";
   const turnoverBlocked = required > 0 && completed < required;
-  const insufficient = value > availableNum;
+  // While turnover is outstanding, only deposited principal (net of prior and
+  // pending withdrawals) can be withdrawn; profit and bonus stay locked.
+  const principalCap = Math.max(
+    0,
+    toNumber(totalDeposited) - toNumber(totalWithdrawn) - toNumber(locked)
+  );
+  const withdrawableMax = turnoverBlocked ? Math.min(availableNum, principalCap) : availableNum;
+  const insufficient = value > withdrawableMax;
   const belowMin = value > 0 && value < minNum;
   const badAddress = address.length > 0 && !isValidEvmAddress(address);
   const canSubmit =
@@ -157,10 +170,10 @@ export function WithdrawForm({
                 <Label htmlFor="amount">Amount (USDG)</Label>
                 <button
                   type="button"
-                  onClick={() => setAmount(String(availableNum))}
+                  onClick={() => setAmount(String(withdrawableMax))}
                   className="text-xs font-medium text-primary hover:underline"
                 >
-                  Max {formatCurrency(availableNum)}
+                  Max {formatCurrency(withdrawableMax)}
                 </button>
               </div>
               <Input
@@ -184,7 +197,9 @@ export function WithdrawForm({
               )}
               {insufficient && (
                 <p className="text-xs text-red-400">
-                  You only have {formatCurrency(availableNum)} USDG available.
+                  {turnoverBlocked && principalCap < availableNum
+                    ? `Turnover incomplete — you can withdraw up to ${formatCurrency(withdrawableMax)} USDG (your deposited funds) now.`
+                    : `You only have ${formatCurrency(withdrawableMax)} USDG available.`}
                 </p>
               )}
               {state?.fieldErrors?.amount && (
@@ -236,6 +251,9 @@ export function WithdrawForm({
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             <Row label="Available" value={`${formatCurrency(availableNum)} USDG`} />
+            {turnoverBlocked && principalCap < availableNum && (
+              <Row label="Withdrawable now" value={`${formatCurrency(withdrawableMax)} USDG`} />
+            )}
             <Row label="Withdrawing" value={`${formatCurrency(value)} USDG`} />
             <Row label={`Fee (${toNumber(feePercent)}%)`} value={`-${formatCurrency(fee)} USDG`} />
             <div className="border-t border-border/60 pt-2">

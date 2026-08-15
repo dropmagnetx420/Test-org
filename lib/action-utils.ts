@@ -24,7 +24,8 @@ const DB_ERROR_MESSAGES: Record<string, string> = {
   USER_NOT_FOUND: "User not found.",
   KYC_REQUIRED: "Complete identity verification before withdrawing.",
   BELOW_MIN_WITHDRAWAL: "Amount is below the minimum withdrawal.",
-  TURNOVER_INCOMPLETE: "Complete your bonus turnover requirement before withdrawing.",
+  TURNOVER_INCOMPLETE:
+    "That's more than your deposited funds. Profit and bonus unlock once you complete the turnover requirement.",
   NO_ADDRESS_AVAILABLE: "No deposit address is available. Please try again shortly.",
   PROMO_UNAVAILABLE: "This promotion is no longer available.",
   PROMO_NOT_STARTED: "This promotion has not started yet.",

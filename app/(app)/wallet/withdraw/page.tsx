@@ -42,6 +42,9 @@ export default async function WithdrawPage() {
         bonus={wallet?.bonus_balance ?? "0"}
         turnoverRequired={wallet?.bonus_turnover_required ?? "0"}
         turnoverCompleted={wallet?.bonus_turnover_completed ?? "0"}
+        totalDeposited={wallet?.total_deposited ?? "0"}
+        totalWithdrawn={wallet?.total_withdrawn ?? "0"}
+        locked={wallet?.locked_balance ?? "0"}
         minWithdrawal={settings.min_withdrawal}
         feePercent={settings.withdrawal_fee_percent}
         kycRequired={settings.kyc_required_for_withdrawal}
