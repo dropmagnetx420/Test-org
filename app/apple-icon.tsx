@@ -6,14 +6,12 @@ export const size = { width: 180, height: 180 };
 export const contentType = "image/png";
 
 /**
- * Generated rather than a static PNG so it always matches the shipped mark and
- * needs no arm64 `sharp` binding at build time — resvg rasterises the vector.
- * The disc sits on an opaque dark tile because iOS composites apple-touch-icons
+ * The mark sits on an opaque dark tile because iOS composites apple-touch-icons
  * onto the home screen with no transparency and rounds the corners itself.
  */
 export default async function AppleIcon() {
-  const mark = await readFile(join(process.cwd(), "public/logo-mark.svg"), "utf8");
-  const markSrc = `data:image/svg+xml;base64,${Buffer.from(mark).toString("base64")}`;
+  const mark = await readFile(join(process.cwd(), "public/logo-mark.png"));
+  const markSrc = `data:image/png;base64,${mark.toString("base64")}`;
 
   return new ImageResponse(
     (

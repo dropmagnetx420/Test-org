@@ -13,12 +13,11 @@ export const contentType = "image/png";
  * critical path. Every element needs an explicit `display: flex`.
  *
  * The mark is inlined as a data URL because Satori has no request context to
- * resolve `/logo-mark.svg` against during a static prerender; resvg rasterises
- * the vector (gradient and all) at render time.
+ * resolve `/logo-mark.png` against during a static prerender.
  */
 export default async function OpengraphImage() {
-  const mark = await readFile(join(process.cwd(), "public/logo-mark.svg"), "utf8");
-  const markSrc = `data:image/svg+xml;base64,${Buffer.from(mark).toString("base64")}`;
+  const mark = await readFile(join(process.cwd(), "public/logo-mark.png"));
+  const markSrc = `data:image/png;base64,${mark.toString("base64")}`;
 
   return new ImageResponse(
     (
