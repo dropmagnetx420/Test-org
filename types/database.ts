@@ -405,6 +405,32 @@ export interface PromoBanner {
   updated_at: string;
 }
 
+export type CampaignMetric = "trading_volume" | "referral_count" | "referral_volume";
+
+export interface Campaign {
+  id: string;
+  title: string;
+  description: string | null;
+  metric: CampaignMetric;
+  starts_at: string;
+  ends_at: string;
+  is_active: boolean;
+  prize_note: string | null;
+  winner_id: string | null;
+  winner_note: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** A single row from the `leaderboard_rankings` RPC. `handle` is anonymised
+ *  (username, or a Member-prefixed id) so the row is safe to show publicly. */
+export interface LeaderboardRow {
+  rank: number;
+  user_id: string;
+  handle: string;
+  score: number;
+}
+
 export interface Partner {
   id: string;
   name: string;

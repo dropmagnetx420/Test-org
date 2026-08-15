@@ -143,7 +143,34 @@ export const CACHE_TAGS = {
   PARTNERS: "partners",
   ADS: "ad-placements",
   STATS: "public-stats",
+  CAMPAIGNS: "campaigns",
 } as const;
+
+/**
+ * The three ways a campaign can rank users. `unit` tells the UI whether a score
+ * is a USDG amount or a plain count; the admin form and the public board both
+ * read this list so the options never drift apart.
+ */
+export const CAMPAIGN_METRICS = [
+  {
+    value: "trading_volume",
+    label: "Trading volume",
+    unit: "currency",
+    blurb: "Ranked by the total stake each user places during the campaign window.",
+  },
+  {
+    value: "referral_count",
+    label: "Referrals",
+    unit: "count",
+    blurb: "Ranked by how many new users each user refers during the window.",
+  },
+  {
+    value: "referral_volume",
+    label: "Referred volume",
+    unit: "currency",
+    blurb: "Ranked by the stake placed by each user's referrals during the window.",
+  },
+] as const;
 
 export const RATE_LIMITS = {
   AUTH: { limit: 8, windowMs: 60_000 },

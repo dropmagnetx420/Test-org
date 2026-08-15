@@ -11,6 +11,7 @@ import {
   Gift,
   LayoutDashboard,
   Receipt,
+  Trophy,
   TrendingUp,
   User,
   Users,
@@ -22,6 +23,7 @@ import { cn } from "@/lib/utils";
 const LINKS = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/dashboard/predictions", label: "Predictions", icon: TrendingUp },
+  { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
   { href: "/earn", label: "Earn rewards", icon: Coins, accent: true },
   { href: "/referrals", label: "Referrals", icon: Users },
   { href: "/wallet", label: "Wallet", icon: Wallet },

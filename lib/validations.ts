@@ -301,6 +301,21 @@ export const bannerSchema = z.object({
   endsAt: z.string().trim().optional().or(z.literal("")),
 });
 
+export const campaignSchema = z
+  .object({
+    title: z.string().trim().min(3, "Enter a campaign title").max(120),
+    description: z.string().trim().max(500).optional().or(z.literal("")),
+    metric: z.enum(["trading_volume", "referral_count", "referral_volume"]),
+    startsAt: z.string().trim().min(1, "Set a start time"),
+    endsAt: z.string().trim().min(1, "Set an end time"),
+    isActive: z.boolean().default(true),
+    prizeNote: z.string().trim().max(500).optional().or(z.literal("")),
+  })
+  .refine((d) => new Date(d.endsAt) > new Date(d.startsAt), {
+    message: "End must be after the start",
+    path: ["endsAt"],
+  });
+
 export const partnerSchema = z.object({
   name: z.string().trim().min(2, "Enter the partner name").max(80),
   logoUrl: z.string().trim().min(1, "Provide a logo URL").max(500),
@@ -373,6 +388,7 @@ export type KycInput = z.infer<typeof kycSchema>;
 export type MarketInput = z.infer<typeof marketSchema>;
 export type SiteSettingsInput = z.infer<typeof siteSettingsSchema>;
 export type BannerInput = z.infer<typeof bannerSchema>;
+export type CampaignInput = z.infer<typeof campaignSchema>;
 export type PartnerInput = z.infer<typeof partnerSchema>;
 export type EarnTaskInput = z.infer<typeof earnTaskSchema>;
 export type TaskSubmissionInput = z.infer<typeof taskSubmissionSchema>;

@@ -24,13 +24,14 @@ import {
   siteSettingsSchema,
   depositAddressSchema,
   bannerSchema,
+  campaignSchema,
   partnerSchema,
   announcementSchema,
   earnTaskSchema,
   reviewTaskSchema,
   adPlacementSchema,
 } from "@/lib/validations";
-import type { ActionResult, Market } from "@/types/database";
+import type { ActionResult, LeaderboardRow, Market } from "@/types/database";
 import { STORAGE_BUCKETS, CACHE_TAGS } from "@/lib/constants";
 
 function slugify(input: string) {
@@ -805,6 +806,101 @@ export async function deleteBanner(id: string): Promise<ActionResult> {
   revalidatePath("/admin/settings/banners");
   revalidatePath("/");
   return ok(null, "Banner deleted.");
+}
+
+// ============================================================ CAMPAIGNS
+export async function saveCampaign(
+  _prev: ActionResult | null,
+  fd: FormData
+): Promise<ActionResult> {
+  await requireAdmin();
+
+  const parsed = parseOrFail(campaignSchema, {
+    title: formString(fd, "title"),
+    description: formString(fd, "description"),
+    metric: formString(fd, "metric"),
+    startsAt: formString(fd, "startsAt"),
+    endsAt: formString(fd, "endsAt"),
+    isActive: fd.get("isActive") === null ? true : formBool(fd, "isActive"),
+    prizeNote: formString(fd, "prizeNote"),
+  });
+  if (!parsed.ok) return parsed.result;
+
+  const d = parsed.data;
+  const id = formString(fd, "id");
+  const supabase = await createClient();
+
+  const payload = {
+    title: d.title,
+    description: d.description || null,
+    metric: d.metric,
+    starts_at: new Date(d.startsAt).toISOString(),
+    ends_at: new Date(d.endsAt).toISOString(),
+    is_active: d.isActive,
+    prize_note: d.prizeNote || null,
+  };
+
+  const { error } = id
+    ? await supabase.from("campaigns").update(payload).eq("id", id)
+    : await supabase.from("campaigns").insert(payload);
+
+  if (error) return toActionError(error);
+
+  updateTag(CACHE_TAGS.CAMPAIGNS);
+  revalidatePath("/admin/settings/campaigns");
+  revalidatePath("/leaderboard");
+  return ok(null, id ? "Campaign updated." : "Campaign created.");
+}
+
+export async function deleteCampaign(id: string): Promise<ActionResult> {
+  await requireAdmin();
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("campaigns").delete().eq("id", id);
+  if (error) return toActionError(error);
+
+  updateTag(CACHE_TAGS.CAMPAIGNS);
+  revalidatePath("/admin/settings/campaigns");
+  revalidatePath("/leaderboard");
+  return ok(null, "Campaign deleted.");
+}
+
+export async function setCampaignWinner(
+  campaignId: string,
+  userId: string,
+  note?: string
+): Promise<ActionResult> {
+  await requireAdmin();
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_campaign_winner", {
+    p_campaign_id: campaignId,
+    p_user_id: userId,
+    p_note: note?.trim() || null,
+  });
+  if (error) return toActionError(error);
+
+  updateTag(CACHE_TAGS.CAMPAIGNS);
+  revalidatePath("/admin/settings/campaigns");
+  revalidatePath("/leaderboard");
+  return ok(null, "Winner recorded — pay the prize with the balance tools.");
+}
+
+/** Fresh standings for the admin winner picker. Same RPC the public board uses,
+ *  but read through the admin session so it is never a cache away from live. */
+export async function getCampaignStandings(
+  campaignId: string
+): Promise<ActionResult<LeaderboardRow[]>> {
+  await requireAdmin();
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("leaderboard_rankings", {
+    p_campaign_id: campaignId,
+    p_limit: 100,
+  });
+  if (error) return toActionError(error);
+
+  return ok((data as LeaderboardRow[]) ?? []);
 }
 
 // ============================================================= PARTNERS

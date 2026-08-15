@@ -5,6 +5,7 @@ const TABS = [
   { href: "/admin/settings", label: "General" },
   { href: "/admin/settings/addresses", label: "Deposit addresses" },
   { href: "/admin/settings/banners", label: "Promo banners" },
+  { href: "/admin/settings/campaigns", label: "Campaigns" },
   { href: "/admin/settings/partners", label: "Partners" },
   { href: "/admin/settings/ads", label: "Ad placements" },
 ];

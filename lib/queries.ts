@@ -6,8 +6,10 @@ import { CACHE_TAGS, DEFAULTS } from "@/lib/constants";
 import type {
   AdPlacementConfig,
   AdPlacementSlot,
+  Campaign,
   EarnTask,
   EarnTaskWithState,
+  LeaderboardRow,
   Market,
   MarketOption,
   MarketOddsPoint,
@@ -116,6 +118,43 @@ export const getPartners = cached(
   ["partners"],
   { revalidate: 300, tags: [CACHE_TAGS.PARTNERS] }
 );
+
+/**
+ * The single campaign that is live right now. `campaigns_select_live` only
+ * exposes an in-window, active row to `anon`, so a cookie-free read returns the
+ * live one or nothing — no need to re-check the window here.
+ */
+export const getLiveCampaign = cached(
+  async (): Promise<Campaign | null> => {
+    const supabase = createPublicClient();
+    const { data } = await supabase
+      .from("campaigns")
+      .select("*")
+      .order("starts_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    return (data as Campaign | null) ?? null;
+  },
+  ["live-campaign"],
+  { revalidate: 60, tags: [CACHE_TAGS.CAMPAIGNS] }
+);
+
+/**
+ * Ranked standings for a campaign. The RPC is granted to `anon`, returns only an
+ * anonymised handle + score, and is parametrised, so it stays uncached and
+ * cookie-free — always fresh for whoever is watching the board.
+ */
+export async function getCampaignLeaderboard(
+  campaignId: string,
+  limit = 50
+): Promise<LeaderboardRow[]> {
+  const supabase = createPublicClient();
+  const { data } = await supabase.rpc("leaderboard_rankings", {
+    p_campaign_id: campaignId,
+    p_limit: limit,
+  });
+  return (data as LeaderboardRow[]) ?? [];
+}
 
 export interface PublicStats {
   totalVolume: number;
