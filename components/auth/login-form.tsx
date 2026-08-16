@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/sonner";
 import { SubmitButton } from "@/components/shared/submit-button";
 import { GoogleButton } from "@/components/auth/google-button";
+import { WalletButton } from "@/components/auth/wallet-button";
 import { signIn } from "@/lib/actions/auth";
 import type { ActionResult } from "@/types/database";
 
@@ -43,6 +44,7 @@ export function LoginForm() {
 
       <CardContent className="space-y-5">
         <GoogleButton next={next} />
+        <WalletButton next={next} />
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
