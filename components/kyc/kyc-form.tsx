@@ -19,10 +19,21 @@ import { SelfieCapture } from "@/components/kyc/selfie-capture";
 import { submitKyc } from "@/lib/actions/kyc";
 import type { ActionResult, IdDocumentType } from "@/types/database";
 
-const DOCUMENT_TYPES: { value: IdDocumentType; label: string; needsBack: boolean }[] = [
-  { value: "national_id", label: "National ID card", needsBack: true },
-  { value: "passport", label: "Passport", needsBack: false },
-  { value: "driving_license", label: "Driving license", needsBack: true },
+const DOCUMENT_TYPES: {
+  value: IdDocumentType;
+  label: string;
+  needsBack: boolean;
+  frontLabel: string;
+}[] = [
+  { value: "national_id", label: "National ID card", needsBack: true, frontLabel: "Document front" },
+  { value: "passport", label: "Passport", needsBack: false, frontLabel: "Passport photo page" },
+  {
+    value: "driving_license",
+    label: "Driving license",
+    needsBack: true,
+    frontLabel: "Document front",
+  },
+  { value: "other", label: "Other document", needsBack: false, frontLabel: "Your document" },
 ];
 
 export function KycForm({ defaultName }: { defaultName: string }) {
@@ -134,11 +145,16 @@ export function KycForm({ defaultName }: { defaultName: string }) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="documentNumber">Document number</Label>
+                <Label htmlFor="documentNumber">
+                  Document number
+                  {documentType === "other" && (
+                    <span className="text-muted-foreground"> (optional)</span>
+                  )}
+                </Label>
                 <Input
                   id="documentNumber"
                   name="documentNumber"
-                  required
+                  required={documentType !== "other"}
                   placeholder="AB1234567"
                   className="font-mono"
                   aria-invalid={Boolean(state?.fieldErrors?.documentNumber)}
@@ -164,7 +180,7 @@ export function KycForm({ defaultName }: { defaultName: string }) {
             <FileDrop
               id="front"
               kind="front"
-              label={config.needsBack ? "Document front" : "Passport photo page"}
+              label={config.frontLabel}
               value={frontUrl}
               onUploaded={setFrontUrl}
             />

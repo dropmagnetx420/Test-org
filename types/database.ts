@@ -6,7 +6,7 @@ export type TradeSide = "yes" | "no";
 export type TradeStatus = "open" | "cancelled" | "won" | "lost" | "refunded";
 export type RequestStatus = "pending" | "approved" | "rejected";
 export type NetworkType = "robinhood" | "ethereum";
-export type IdDocumentType = "national_id" | "passport" | "driving_license";
+export type IdDocumentType = "national_id" | "passport" | "driving_license" | "other";
 export type TransactionType =
   | "deposit"
   | "withdrawal"

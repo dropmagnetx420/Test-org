@@ -135,25 +135,30 @@ export const withdrawSchema = z
   });
 
 // -------------------------------------------------------------------- kyc
-export const kycSchema = z.object({
-  documentType: z.enum(["national_id", "passport", "driving_license"]),
-  documentNumber: z.string().trim().min(4, "Enter your document number").max(50),
-  fullName: z.string().trim().min(2, "Enter your full legal name").max(80),
-  dateOfBirth: z
-    .string()
-    .trim()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD")
-    .refine((v) => {
-      const dob = new Date(v);
-      const age = (Date.now() - dob.getTime()) / 31_557_600_000;
-      return age >= 18 && age <= 120;
-    }, "You must be at least 18 years old"),
-  country: z.string().trim().min(2, "Select your country").max(60),
-  address: z.string().trim().max(240).optional().or(z.literal("")),
-  documentFrontUrl: z.string().trim().min(1, "Upload the front of your document"),
-  documentBackUrl: z.string().trim().optional().or(z.literal("")),
-  selfieUrl: z.string().trim().min(1, "Upload a live selfie"),
-});
+export const kycSchema = z
+  .object({
+    documentType: z.enum(["national_id", "passport", "driving_license", "other"]),
+    documentNumber: z.string().trim().max(50),
+    fullName: z.string().trim().min(2, "Enter your full legal name").max(80),
+    dateOfBirth: z
+      .string()
+      .trim()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD")
+      .refine((v) => {
+        const dob = new Date(v);
+        const age = (Date.now() - dob.getTime()) / 31_557_600_000;
+        return age >= 18 && age <= 120;
+      }, "You must be at least 18 years old"),
+    country: z.string().trim().min(2, "Select your country").max(60),
+    address: z.string().trim().max(240).optional().or(z.literal("")),
+    documentFrontUrl: z.string().trim().min(1, "Upload the front of your document"),
+    documentBackUrl: z.string().trim().optional().or(z.literal("")),
+    selfieUrl: z.string().trim().min(1, "Upload a live selfie"),
+  })
+  .refine((d) => d.documentType === "other" || d.documentNumber.length >= 4, {
+    message: "Enter your document number",
+    path: ["documentNumber"],
+  });
 
 // ----------------------------------------------------------- admin market
 const marketOutcomeSchema = z.object({

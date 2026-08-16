@@ -29,6 +29,7 @@ const DOC_LABELS: Record<string, string> = {
   national_id: "National ID",
   passport: "Passport",
   driving_license: "Driving license",
+  other: "Other document",
 };
 
 interface PageProps {

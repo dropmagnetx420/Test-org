@@ -15,6 +15,7 @@ const DOC_LABELS: Record<string, string> = {
   national_id: "National ID card",
   passport: "Passport",
   driving_license: "Driving license",
+  other: "Other document",
 };
 
 export default async function KycPage() {

@@ -8,8 +8,12 @@ import { kycSchema } from "@/lib/validations";
 import { STORAGE_BUCKETS } from "@/lib/constants";
 import type { ActionResult, KycRequest } from "@/types/database";
 
-const MAX_UPLOAD_BYTES = 6 * 1024 * 1024;
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
+
+/** Any real photo/scan (not a vector) or a PDF. */
+function isAllowedType(type: string) {
+  return (type.startsWith("image/") && type !== "image/svg+xml") || type === "application/pdf";
+}
 
 /**
  * Uploads one KYC file into the caller's own folder. The storage policy
@@ -23,9 +27,9 @@ export async function uploadKycFile(fd: FormData): Promise<ActionResult<{ path: 
   const kind = formString(fd, "kind");
 
   if (!(file instanceof File) || file.size === 0) return fail("Select a file to upload.");
-  if (file.size > MAX_UPLOAD_BYTES) return fail("File is too large. Maximum size is 6 MB.");
-  if (!ALLOWED_TYPES.includes(file.type)) {
-    return fail("Unsupported file type. Upload a JPG, PNG, WebP or PDF.");
+  if (file.size > MAX_UPLOAD_BYTES) return fail("File is too large. Maximum size is 10 MB.");
+  if (!isAllowedType(file.type)) {
+    return fail("Unsupported file type. Upload a photo, scan, or PDF.");
   }
   if (!["front", "back", "selfie"].includes(kind)) return fail("Invalid upload type.");
 

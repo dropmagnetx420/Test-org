@@ -62,7 +62,7 @@ export function FileDrop({
         <Input
           id={id}
           type="file"
-          accept="image/jpeg,image/png,image/webp,application/pdf"
+          accept="image/*,application/pdf"
           onChange={onChange}
           disabled={busy}
           className="cursor-pointer file:mr-3 file:rounded file:border-0 file:bg-secondary file:px-2 file:py-1 file:text-xs"
@@ -79,7 +79,7 @@ export function FileDrop({
       {!value && !hint && (
         <p className="flex items-center gap-1 text-xs text-muted-foreground">
           <Upload className="size-3" />
-          JPG, PNG, WebP or PDF up to 6 MB
+          Any photo, scan, or PDF up to 10 MB
         </p>
       )}
     </div>
