@@ -65,20 +65,25 @@ export default async function BonusesPage({ searchParams }: PageProps) {
       <div className="grid gap-4 sm:grid-cols-3">
         <StatCard
           label="Bonus balance"
-          value={`${formatCurrency(wallet?.bonus_balance ?? 0)} USDG`}
+          numericValue={toNumber(wallet?.bonus_balance ?? 0)}
+          kind="currency"
+          suffix=" USDG"
           icon={Gift}
           accent="accent"
         />
         <StatCard
           label="Turnover completed"
-          value={`${formatCurrency(completed)} USDG`}
+          numericValue={completed}
+          kind="currency"
+          suffix=" USDG"
           icon={Target}
           accent="primary"
           hint={required > 0 ? `of ${formatCurrency(required)} required` : "Nothing pending"}
         />
         <StatCard
           label="Bonuses received"
-          value={total.toLocaleString()}
+          numericValue={total}
+          kind="int"
           icon={Sparkles}
           accent="success"
         />

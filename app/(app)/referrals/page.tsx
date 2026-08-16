@@ -64,23 +64,28 @@ export default async function ReferralsPage({ searchParams }: PageProps) {
       </header>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Total referrals" value={total.toLocaleString()} icon={Users} accent="primary" />
+        <StatCard label="Total referrals" numericValue={total} kind="int" icon={Users} accent="primary" />
         <StatCard
           label="Active traders"
-          value={active.toLocaleString()}
+          numericValue={active}
+          kind="int"
           icon={TrendingUp}
           accent="accent"
           hint="Referrals who have traded"
         />
         <StatCard
           label="Commission earned"
-          value={`${formatCurrency(earnings)} USDG`}
+          numericValue={earnings}
+          kind="currency"
+          suffix=" USDG"
           icon={Coins}
           accent="success"
         />
         <StatCard
           label="Referred volume"
-          value={`${formatCurrency(volume)} USDG`}
+          numericValue={volume}
+          kind="currency"
+          suffix=" USDG"
           icon={UserPlus}
           accent="warning"
         />

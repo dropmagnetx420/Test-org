@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/sonner";
 import { EmptyState } from "@/components/shared/empty-state";
+import { StaggerGrid, StaggerItem } from "@/components/shared/motion";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { SubmitButton } from "@/components/shared/submit-button";
 import { submitTaskProof, uploadTaskProof } from "@/lib/actions/earn";
@@ -44,9 +45,13 @@ export function TaskList({ tasks }: { tasks: EarnTaskWithState[] }) {
 
   return (
     <div className="space-y-3">
-      {tasks.map((task) => (
-        <TaskCard key={task.id} task={task} onStart={() => setActive(task)} />
-      ))}
+      <StaggerGrid className="space-y-3">
+        {tasks.map((task) => (
+          <StaggerItem key={task.id}>
+            <TaskCard task={task} onStart={() => setActive(task)} />
+          </StaggerItem>
+        ))}
+      </StaggerGrid>
 
       <SubmitDialog
         key={active?.id ?? "closed"}
@@ -63,7 +68,7 @@ function TaskCard({ task, onStart }: { task: EarnTaskWithState; onStart: () => v
   const pending = status === "pending";
 
   return (
-    <Card className={cn("glass", done && "opacity-70")}>
+    <Card className={cn("glass lift", done && "opacity-70")}>
       <CardContent className="flex flex-wrap items-center gap-4 p-4">
         <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-secondary text-xl">
           {typeIcon(task.type)}

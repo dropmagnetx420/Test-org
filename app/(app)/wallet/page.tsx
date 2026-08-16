@@ -84,26 +84,34 @@ export default async function WalletPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Available balance"
-          value={`${formatCurrency(available)} USDG`}
+          numericValue={available}
+          kind="currency"
+          suffix=" USDG"
           icon={WalletIcon}
           accent="primary"
         />
         <StatCard
           label="Bonus balance"
-          value={`${formatCurrency(bonus)} USDG`}
+          numericValue={bonus}
+          kind="currency"
+          suffix=" USDG"
           icon={Gift}
           accent="accent"
           hint={required > 0 ? `${formatCurrency(completed)} / ${formatCurrency(required)} turnover` : undefined}
         />
         <StatCard
           label="In open predictions"
-          value={`${formatCurrency(locked)} USDG`}
+          numericValue={locked}
+          kind="currency"
+          suffix=" USDG"
           icon={Lock}
           accent="warning"
         />
         <StatCard
           label="Lifetime deposited"
-          value={`${formatCurrency(wallet?.total_deposited ?? 0)} USDG`}
+          numericValue={toNumber(wallet?.total_deposited ?? 0)}
+          kind="currency"
+          suffix=" USDG"
           icon={Sparkles}
           accent="success"
           hint={`${formatCurrency(wallet?.total_withdrawn ?? 0)} withdrawn`}

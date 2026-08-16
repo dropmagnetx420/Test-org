@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { StatCard } from "@/components/shared/stat-card";
+import { AnimatedNumber } from "@/components/shared/animated-number";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { EmptyState } from "@/components/shared/empty-state";
 import { createClient } from "@/lib/supabase/server";
@@ -117,28 +118,33 @@ export default async function DashboardPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Available balance"
-          value={formatCurrency(wallet?.available_balance ?? 0)}
+          numericValue={toNumber(wallet?.available_balance ?? 0)}
+          kind="currency"
           hint="Withdrawable USDG"
           icon={WalletIcon}
           accent="primary"
         />
         <StatCard
           label="Bonus balance"
-          value={formatCurrency(wallet?.bonus_balance ?? 0)}
+          numericValue={toNumber(wallet?.bonus_balance ?? 0)}
+          kind="currency"
           hint="Tradeable, turnover applies"
           icon={Gift}
           accent="accent"
         />
         <StatCard
           label="Open positions"
-          value={String(stats.open_positions)}
+          numericValue={stats.open_positions}
+          kind="int"
           hint={`${formatCurrency(stats.open_stake)} at stake`}
           icon={TrendingUp}
           accent="warning"
         />
         <StatCard
           label="Net profit"
-          value={`${netProfit >= 0 ? "+" : ""}${formatCurrency(netProfit)}`}
+          numericValue={netProfit}
+          kind="currency"
+          prefix={netProfit >= 0 ? "+" : ""}
           hint={`${stats.total_trades} predictions placed`}
           icon={Trophy}
           accent={netProfit >= 0 ? "success" : "destructive"}
@@ -172,7 +178,7 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="font-mono text-3xl font-semibold tabular-nums">
-              {turnoverPct.toFixed(0)}%
+              <AnimatedNumber value={turnoverPct} kind="int" />%
             </p>
             <Progress value={turnoverPct} />
             <p className="text-xs text-muted-foreground">
@@ -191,7 +197,9 @@ export default async function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <p className="font-mono text-3xl font-semibold tabular-nums">{stats.referral_count}</p>
+            <p className="font-mono text-3xl font-semibold tabular-nums">
+              <AnimatedNumber value={stats.referral_count} kind="int" />
+            </p>
             <p className="text-xs text-muted-foreground">
               {formatCurrency(stats.referral_earnings)} USDG earned in commission
             </p>
