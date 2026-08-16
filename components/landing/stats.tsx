@@ -1,6 +1,6 @@
 import { Activity, BarChart3, Trophy, Users } from "lucide-react";
 import { FadeIn, StaggerGrid, StaggerItem } from "@/components/shared/motion";
-import { formatCompact } from "@/lib/utils";
+import { AnimatedNumber } from "@/components/shared/animated-number";
 
 interface StatsProps {
   totalVolume: number;
@@ -11,10 +11,10 @@ interface StatsProps {
 
 export function Stats({ totalVolume, totalTrades, totalUsers, resolvedMarkets }: StatsProps) {
   const items = [
-    { icon: BarChart3, label: "Total volume traded", value: `${formatCompact(totalVolume)} USDG` },
-    { icon: Activity, label: "Predictions placed", value: formatCompact(totalTrades) },
-    { icon: Users, label: "Registered traders", value: formatCompact(totalUsers) },
-    { icon: Trophy, label: "Markets settled", value: formatCompact(resolvedMarkets) },
+    { icon: BarChart3, label: "Total volume traded", value: totalVolume, suffix: " USDG" },
+    { icon: Activity, label: "Predictions placed", value: totalTrades },
+    { icon: Users, label: "Registered traders", value: totalUsers },
+    { icon: Trophy, label: "Markets settled", value: resolvedMarkets },
   ];
 
   return (
@@ -32,7 +32,7 @@ export function Stats({ totalVolume, totalTrades, totalUsers, resolvedMarkets }:
         </FadeIn>
 
         <StaggerGrid className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-          {items.map(({ icon: Icon, label, value }) => (
+          {items.map(({ icon: Icon, label, value, suffix }) => (
             <StaggerItem key={label}>
               <div className="glass relative overflow-hidden rounded-xl p-4 text-center sm:p-6">
                 <div className="pointer-events-none absolute -right-8 -top-8 size-24 rounded-full bg-primary/20 blur-2xl" />
@@ -40,7 +40,8 @@ export function Stats({ totalVolume, totalTrades, totalUsers, resolvedMarkets }:
                   <Icon className="size-5" />
                 </div>
                 <p className="font-mono text-lg font-semibold tabular-nums sm:text-2xl lg:text-3xl">
-                  {value}
+                  <AnimatedNumber value={value} kind="compact" />
+                  {suffix}
                 </p>
                 <p className="mt-1 text-[11px] text-muted-foreground sm:text-xs">{label}</p>
               </div>

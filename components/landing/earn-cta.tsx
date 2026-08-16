@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Coins, Megaphone, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { FadeIn } from "@/components/shared/motion";
 
 const WAYS = [
   {
@@ -25,9 +26,9 @@ const WAYS = [
 export function EarnCta() {
   return (
     <section className="px-4 py-14 sm:px-6 lg:px-8">
-      <div className="border-gradient mx-auto max-w-7xl overflow-hidden rounded-3xl bg-card/40 backdrop-blur-xl">
+      <div className="border-gradient-flow mx-auto max-w-7xl overflow-hidden rounded-3xl bg-card/40 backdrop-blur-xl">
         <div className="grid gap-8 p-6 sm:p-10 lg:grid-cols-[1fr_1.15fr] lg:items-center">
-          <div>
+          <FadeIn>
             <p className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-300">
               <Coins className="size-3.5" />
               No deposit needed
@@ -53,22 +54,24 @@ export function EarnCta() {
                 <Link href="/referrals">Referral programme</Link>
               </Button>
             </div>
-          </div>
+          </FadeIn>
 
-          <ul className="grid gap-3 sm:grid-cols-3 lg:gap-4">
-            {WAYS.map(({ icon: Icon, title, description }) => (
-              <li
-                key={title}
-                className="rounded-2xl border border-border/60 bg-background/40 p-4 transition-colors hover:border-primary/40"
-              >
-                <span className="grid size-9 place-items-center rounded-xl bg-primary/12 text-primary ring-1 ring-inset ring-primary/25">
-                  <Icon className="size-4" />
-                </span>
-                <p className="mt-3 text-sm font-semibold">{title}</p>
-                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{description}</p>
-              </li>
-            ))}
-          </ul>
+          <FadeIn delay={0.12}>
+            <ul className="grid gap-3 sm:grid-cols-3 lg:gap-4">
+              {WAYS.map(({ icon: Icon, title, description }) => (
+                <li
+                  key={title}
+                  className="lift rounded-2xl border border-border/60 bg-background/40 p-4 transition-colors hover:border-primary/40"
+                >
+                  <span className="grid size-9 place-items-center rounded-xl bg-primary/12 text-primary ring-1 ring-inset ring-primary/25">
+                    <Icon className="size-4" />
+                  </span>
+                  <p className="mt-3 text-sm font-semibold">{title}</p>
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{description}</p>
+                </li>
+              ))}
+            </ul>
+          </FadeIn>
         </div>
       </div>
     </section>

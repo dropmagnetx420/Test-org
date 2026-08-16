@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, ShieldCheck, Sparkles, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { formatCompact } from "@/lib/utils";
+import { AnimatedNumber } from "@/components/shared/animated-number";
 
 const TRUST = [
   { icon: ShieldCheck, label: "Row-level security" },
@@ -19,9 +19,9 @@ export function Hero({
   traders: number;
 }) {
   const stats = [
-    { label: "Total volume", value: formatCompact(totalVolume) },
-    { label: "Open markets", value: openMarkets.toLocaleString() },
-    { label: "Traders", value: formatCompact(traders) },
+    { label: "Total volume", value: totalVolume, kind: "compact" as const },
+    { label: "Open markets", value: openMarkets, kind: "int" as const },
+    { label: "Traders", value: traders, kind: "compact" as const },
   ];
 
   return (
@@ -86,7 +86,7 @@ export function Hero({
               className="glass rounded-xl px-2 py-3 transition-colors hover:border-primary/40 sm:px-3 sm:py-4"
             >
               <dd className="font-mono text-lg font-semibold tabular-nums sm:text-2xl">
-                {stat.value}
+                <AnimatedNumber value={stat.value} kind={stat.kind} />
               </dd>
               <dt className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground sm:text-[11px]">
                 {stat.label}

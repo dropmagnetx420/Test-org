@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useReducedMotion } from "framer-motion";
 import {
   CartesianGrid,
   Line,
@@ -62,6 +63,7 @@ export function MarketChart({
   // recharts measures its container in an effect after mount, so it renders an
   // empty box on the server and fills in on the client — safe to render directly.
   const rows = useMemo(() => buildRows(history), [history]);
+  const reduce = useReducedMotion();
   const active = options.filter((o) => o.is_active);
   const color = (position: number) => LINE_COLORS[position % LINE_COLORS.length];
 
@@ -101,7 +103,7 @@ export function MarketChart({
             width={44}
           />
           <Tooltip content={<ChartTooltip options={active} />} />
-          {active.map((option) => (
+          {active.map((option, index) => (
             <Line
               key={option.id}
               type="monotone"
@@ -110,7 +112,10 @@ export function MarketChart({
               stroke={color(option.position)}
               strokeWidth={2}
               dot={false}
-              isAnimationActive={false}
+              isAnimationActive={!reduce}
+              animationBegin={index * 120}
+              animationDuration={900}
+              animationEasing="ease-out"
               connectNulls
             />
           ))}

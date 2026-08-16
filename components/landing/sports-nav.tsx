@@ -10,7 +10,7 @@ export function SportsNav({ counts }: { counts: Record<string, number> }) {
           <Link
             key={sport.value}
             href={`/markets?sport=${sport.value}`}
-            className="group relative overflow-hidden rounded-xl border border-border/60 bg-card/60 p-4 backdrop-blur-xl transition-colors hover:border-primary/50"
+            className="lift group relative overflow-hidden rounded-xl border border-border/60 bg-card/60 p-4 backdrop-blur-xl transition-colors hover:border-primary/50"
           >
             <div
               className={cn(

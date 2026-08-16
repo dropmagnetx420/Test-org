@@ -10,8 +10,10 @@ import { Countdown } from "@/components/shared/countdown";
 import { TradePanel } from "@/components/markets/trade-panel";
 import { CancelTradeButton } from "@/components/markets/cancel-trade-button";
 import { MarketChart } from "@/components/markets/market-chart";
+import { ProbabilityBar } from "@/components/markets/probability-bar";
 import { EmptyState } from "@/components/shared/empty-state";
 import { AdSlot } from "@/components/shared/ad-slot";
+import { AnimatedNumber } from "@/components/shared/animated-number";
 import { createClient } from "@/lib/supabase/server";
 import { getUser, getWallet, getSettings } from "@/lib/auth";
 import { getMarketBySlug, getMarketOptions, getMarketOddsHistory } from "@/lib/queries";
@@ -155,22 +157,20 @@ export default async function MarketDetailPage({ params }: PageProps) {
                   Implied probability
                 </p>
                 <p className="font-mono text-4xl font-bold tabular-nums text-emerald-400">
-                  {leaderPct}%
+                  <AnimatedNumber value={leaderPct} kind="int" />%
                 </p>
                 <p className="text-xs text-muted-foreground">chance of {leader?.label ?? "—"}</p>
               </div>
               <Countdown to={market.end_time} className="text-sm" />
             </div>
 
-            <div className="flex h-2.5 overflow-hidden rounded-full bg-secondary">
-              {options.map((option, index) => (
-                <div
-                  key={option.id}
-                  className={cn("h-full", OUTCOME_BARS[index % OUTCOME_BARS.length])}
-                  style={{ width: `${Math.round(toNumber(option.odds) * 100)}%` }}
-                />
-              ))}
-            </div>
+            <ProbabilityBar
+              segments={options.map((option, index) => ({
+                id: option.id,
+                pct: Math.round(toNumber(option.odds) * 100),
+                className: OUTCOME_BARS[index % OUTCOME_BARS.length],
+              }))}
+            />
 
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {options.map((option) => (
