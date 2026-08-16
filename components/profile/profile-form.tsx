@@ -31,7 +31,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
         <form action={formAction} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" value={profile.email} readOnly disabled className="font-mono text-xs" />
+            <Input id="email" value={profile.email ?? ""} readOnly disabled className="font-mono text-xs" />
             <p className="text-xs text-muted-foreground">
               Contact support if you need to change your email address.
             </p>

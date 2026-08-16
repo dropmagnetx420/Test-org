@@ -171,7 +171,7 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
             {users.map((user) => {
               const wallet = wallets.get(user.id);
               const referral = referrals.get(user.id);
-              const name = user.full_name || user.username || user.email;
+              const name = user.full_name || user.username || user.email || "User";
 
               return (
                 <StaggerItem key={user.id}>

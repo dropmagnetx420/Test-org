@@ -24,7 +24,7 @@ import { formatCurrency } from "@/lib/utils";
 import type { Profile, Wallet } from "@/types/database";
 
 function initials(profile: Profile) {
-  const source = profile.full_name || profile.username || profile.email;
+  const source = profile.full_name || profile.username || profile.email || "?";
   return source
     .split(/[\s@._-]+/)
     .filter(Boolean)

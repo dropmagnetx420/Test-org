@@ -58,7 +58,7 @@ export type AdFormat = "banner" | "native" | "interstitial" | "rewarded_video";
 
 export interface Profile {
   id: string;
-  email: string;
+  email: string | null;
   username: string | null;
   full_name: string | null;
   avatar_url: string | null;

@@ -14,7 +14,7 @@ export const metadata: Metadata = { title: "Profile" };
 
 export default async function ProfilePage() {
   const profile = await requireProfile();
-  const initials = (profile.full_name || profile.username || profile.email)
+  const initials = (profile.full_name || profile.username || profile.email || "?")
     .slice(0, 2)
     .toUpperCase();
 
