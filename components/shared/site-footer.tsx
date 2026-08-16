@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@/components/shared/logo";
+import { FadeIn } from "@/components/shared/motion";
 import { SPORTS, SITE_DESCRIPTION } from "@/lib/constants";
 import type { SiteSettings } from "@/types/database";
 
@@ -32,7 +33,7 @@ export function SiteFooter({ settings }: { settings: SiteSettings | null }) {
 
   return (
     <footer className="mt-20 border-t border-border/50 bg-background/60 backdrop-blur-xl">
-      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-4 lg:px-8">
+      <FadeIn className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-4 lg:px-8">
         <div className="space-y-4 md:col-span-2">
           <Logo siteName={settings?.site_name ?? "NextGen Predict"} />
           <p className="max-w-sm text-sm text-muted-foreground">
@@ -112,7 +113,7 @@ export function SiteFooter({ settings }: { settings: SiteSettings | null }) {
             )}
           </ul>
         </div>
-      </div>
+      </FadeIn>
 
       <div className="border-t border-border/50">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-6 text-xs text-muted-foreground sm:flex-row sm:px-6 lg:px-8">

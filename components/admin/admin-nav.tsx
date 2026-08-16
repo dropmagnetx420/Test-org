@@ -3,6 +3,7 @@
 import { Fragment } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { m } from "framer-motion";
 import {
   ArrowDownToLine,
   ArrowUpFromLine,
@@ -95,13 +96,17 @@ export function AdminNav({ badges }: { badges: AdminBadges }) {
                 >
                   {active && (
                     <>
-                      <span
+                      <m.span
+                        layoutId="admin-active-bg"
                         aria-hidden
                         className="absolute inset-x-1 bottom-0 top-1.5 rounded-t-lg bg-primary/10"
+                        transition={{ type: "spring", stiffness: 400, damping: 34 }}
                       />
-                      <span
+                      <m.span
+                        layoutId="admin-active-underline"
                         aria-hidden
                         className="absolute inset-x-2 bottom-0 h-0.5 rounded-t-full bg-gradient-to-r from-primary to-accent"
+                        transition={{ type: "spring", stiffness: 400, damping: 34 }}
                       />
                     </>
                   )}

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { m } from "framer-motion";
 import {
   ArrowDownToLine,
   ArrowUpFromLine,
@@ -53,18 +54,26 @@ export function DashboardNav({ unreadCount = 0 }: { unreadCount?: number }) {
               key={href}
               href={href}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                "relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 active
-                  ? "bg-primary/15 text-primary"
+                  ? "text-primary"
                   : accent
                     ? "border border-amber-500/30 bg-amber-500/[0.08] text-amber-300 hover:bg-amber-500/15"
                     : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
               )}
             >
-              <Icon className="size-4 shrink-0" />
-              <span className="flex-1">{label}</span>
+              {active && (
+                <m.span
+                  layoutId="dash-active-desktop"
+                  aria-hidden
+                  className="absolute inset-0 rounded-lg bg-primary/15 ring-1 ring-inset ring-primary/25"
+                  transition={{ type: "spring", stiffness: 400, damping: 34 }}
+                />
+              )}
+              <Icon className="relative size-4 shrink-0" />
+              <span className="relative flex-1">{label}</span>
               {badge && (
-                <Badge variant="destructive" className="px-1.5 py-0 text-[10px]">
+                <Badge variant="destructive" className="relative px-1.5 py-0 text-[10px]">
                   {unreadCount > 99 ? "99+" : unreadCount}
                 </Badge>
               )}
@@ -85,18 +94,26 @@ export function DashboardNav({ unreadCount = 0 }: { unreadCount?: number }) {
               key={href}
               href={href}
               className={cn(
-                "flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
+                "relative flex shrink-0 items-center gap-1.5 overflow-hidden rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
                 active
-                  ? "border-primary bg-primary/15 text-primary"
+                  ? "border-primary text-primary"
                   : accent
                     ? "border-amber-500/40 bg-amber-500/10 text-amber-300"
                     : "border-border/60 bg-card/60 text-muted-foreground"
               )}
             >
-              <Icon className="size-3.5" />
-              {label}
+              {active && (
+                <m.span
+                  layoutId="dash-active-mobile"
+                  aria-hidden
+                  className="absolute inset-0 rounded-full bg-primary/15"
+                  transition={{ type: "spring", stiffness: 400, damping: 34 }}
+                />
+              )}
+              <Icon className="relative size-3.5" />
+              <span className="relative">{label}</span>
               {badge && (
-                <span className="grid size-4 place-items-center rounded-full bg-red-500 text-[9px] font-bold text-white">
+                <span className="relative grid size-4 place-items-center rounded-full bg-red-500 text-[9px] font-bold text-white">
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
               )}

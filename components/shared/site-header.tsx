@@ -3,6 +3,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { m, AnimatePresence } from "framer-motion";
 import { Coins, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/shared/logo";
@@ -78,9 +79,11 @@ export function SiteHeader({
               >
                 {item.label}
                 {active && (
-                  <span
+                  <m.span
+                    layoutId="site-nav-underline"
                     aria-hidden
                     className="absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full bg-gradient-to-r from-primary to-accent"
+                    transition={{ type: "spring", stiffness: 400, damping: 32 }}
                   />
                 )}
               </Link>
@@ -105,41 +108,52 @@ export function SiteHeader({
         </div>
       </div>
 
-      {open && (
-        <div className="border-t border-border/50 bg-background/95 px-4 py-3 md:hidden">
-          <Link
-            href="/earn"
-            onClick={() => setOpen(false)}
-            className="mb-2 flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2.5 text-sm font-semibold text-amber-300"
+      <AnimatePresence initial={false}>
+        {open && (
+          <m.div
+            key="mobile-menu"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+            className="overflow-hidden border-t border-border/50 bg-background/95 md:hidden"
           >
-            <Coins className="size-4" />
-            Earn rewards
-            <span className="ml-auto text-[11px] font-medium text-amber-300/70">
-              Tasks &amp; ads
-            </span>
-          </Link>
+            <div className="px-4 py-3">
+              <Link
+                href="/earn"
+                onClick={() => setOpen(false)}
+                className="mb-2 flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2.5 text-sm font-semibold text-amber-300"
+              >
+                <Coins className="size-4" />
+                Earn rewards
+                <span className="ml-auto text-[11px] font-medium text-amber-300/70">
+                  Tasks &amp; ads
+                </span>
+              </Link>
 
-          <Link
-            href="/markets"
-            onClick={() => setOpen(false)}
-            className="block rounded-md px-3 py-2 text-sm font-medium hover:bg-secondary/60"
-          >
-            All markets
-          </Link>
-          {SPORTS.map((sport) => (
-            <Link
-              key={sport.value}
-              href={`/markets?sport=${sport.value}`}
-              onClick={() => setOpen(false)}
-              className="block rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
-            >
-              <span className="mr-2">{sport.icon}</span>
-              {sport.label}
-            </Link>
-          ))}
-          {mobileAuth}
-        </div>
-      )}
+              <Link
+                href="/markets"
+                onClick={() => setOpen(false)}
+                className="block rounded-md px-3 py-2 text-sm font-medium hover:bg-secondary/60"
+              >
+                All markets
+              </Link>
+              {SPORTS.map((sport) => (
+                <Link
+                  key={sport.value}
+                  href={`/markets?sport=${sport.value}`}
+                  onClick={() => setOpen(false)}
+                  className="block rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+                >
+                  <span className="mr-2">{sport.icon}</span>
+                  {sport.label}
+                </Link>
+              ))}
+              {mobileAuth}
+            </div>
+          </m.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 }
