@@ -18,14 +18,14 @@ export function Stats({ totalVolume, totalTrades, totalUsers, resolvedMarkets }:
   ];
 
   return (
-    <section className="px-4 py-16 sm:px-6 lg:px-8">
+    <section className="px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <FadeIn>
-          <div className="mb-10 text-center">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+          <div className="mb-8 text-center sm:mb-10">
+            <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
               Built on <span className="text-gradient">real activity</span>
             </h2>
-            <p className="mt-3 text-muted-foreground">
+            <p className="mt-2 text-sm text-muted-foreground sm:mt-3 sm:text-base">
               Every number below is read live from the exchange.
             </p>
           </div>

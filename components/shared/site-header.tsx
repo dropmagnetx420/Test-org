@@ -4,7 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { m, AnimatePresence } from "framer-motion";
-import { Coins, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/shared/logo";
 import { SPORTS } from "@/lib/constants";
@@ -92,7 +92,6 @@ export function SiteHeader({
         </nav>
 
         <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
-          <EarnPill />
           {account}
 
           <Button
@@ -120,18 +119,6 @@ export function SiteHeader({
           >
             <div className="px-4 py-3">
               <Link
-                href="/earn"
-                onClick={() => setOpen(false)}
-                className="mb-2 flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2.5 text-sm font-semibold text-amber-300"
-              >
-                <Coins className="size-4" />
-                Earn rewards
-                <span className="ml-auto text-[11px] font-medium text-amber-300/70">
-                  Tasks &amp; ads
-                </span>
-              </Link>
-
-              <Link
                 href="/markets"
                 onClick={() => setOpen(false)}
                 className="block rounded-md px-3 py-2 text-sm font-medium hover:bg-secondary/60"
@@ -155,22 +142,5 @@ export function SiteHeader({
         )}
       </AnimatePresence>
     </header>
-  );
-}
-
-/** Kept in the bar on every breakpoint — the earn flow was previously buried
- *  eight items down the dashboard sidebar. */
-function EarnPill() {
-  return (
-    <Link
-      href="/earn"
-      className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-amber-500/40 bg-gradient-to-r from-amber-500/15 to-primary/15 px-2 py-1.5 text-[11px] font-semibold text-amber-300 transition-colors hover:border-amber-400/70 hover:text-amber-200 sm:px-3 sm:text-xs"
-    >
-      <Coins className="size-3.5" />
-      Earn
-      <span className="hidden rounded-full bg-amber-400/20 px-1.5 py-px text-[10px] font-bold uppercase tracking-wide lg:inline">
-        free
-      </span>
-    </Link>
   );
 }
