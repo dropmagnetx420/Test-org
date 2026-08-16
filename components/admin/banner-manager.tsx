@@ -28,6 +28,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/sonner";
 import { EmptyState } from "@/components/shared/empty-state";
+import { StaggerGrid, StaggerItem } from "@/components/shared/motion";
 import { SubmitButton } from "@/components/shared/submit-button";
 import { deleteBanner, saveBanner, uploadBannerImage } from "@/lib/actions/admin";
 import { cn, formatCurrency, toNumber } from "@/lib/utils";
@@ -71,11 +72,13 @@ export function BannerManager({ banners }: { banners: PromoBanner[] }) {
           description="Create one to highlight a bonus or campaign on the landing page."
         />
       ) : (
-        <div className="space-y-3">
+        <StaggerGrid className="space-y-3">
           {banners.map((banner) => (
-            <BannerRow key={banner.id} banner={banner} onEdit={() => setEditing(banner)} />
+            <StaggerItem key={banner.id}>
+              <BannerRow banner={banner} onEdit={() => setEditing(banner)} />
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerGrid>
       )}
 
       <BannerDialog
@@ -109,7 +112,7 @@ function BannerRow({ banner, onEdit }: { banner: PromoBanner; onEdit: () => void
   const exhausted = limit !== null && claimed >= limit;
 
   return (
-    <Card className={cn("glass overflow-hidden", !banner.is_active && "opacity-60")}>
+    <Card className={cn("glass lift overflow-hidden", !banner.is_active && "opacity-60")}>
       <div className={cn("h-1.5 bg-gradient-to-r", banner.bg_gradient ?? "from-violet-600 to-fuchsia-600")} />
       <CardContent className="flex flex-wrap items-start gap-3 p-4">
         <div className="min-w-0 flex-1 space-y-2">

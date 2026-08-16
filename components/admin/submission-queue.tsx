@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/sonner";
 import { EmptyState } from "@/components/shared/empty-state";
+import { StaggerGrid, StaggerItem } from "@/components/shared/motion";
 import { SubmitButton } from "@/components/shared/submit-button";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { FilePreviewLink } from "@/components/admin/file-preview-link";
@@ -51,21 +52,24 @@ export function SubmissionQueue({
   }
 
   return (
-    <div className="space-y-3">
-      {submissions.map((submission) => (
-        <SubmissionRow
-          key={submission.id}
-          submission={submission}
-          onDecide={(approve) => setDecision({ submission, approve })}
-        />
-      ))}
+    <>
+      <StaggerGrid className="space-y-3">
+        {submissions.map((submission) => (
+          <StaggerItem key={submission.id}>
+            <SubmissionRow
+              submission={submission}
+              onDecide={(approve) => setDecision({ submission, approve })}
+            />
+          </StaggerItem>
+        ))}
+      </StaggerGrid>
 
       <ReviewDialog
         key={decision ? `${decision.submission.id}-${decision.approve}` : "closed"}
         decision={decision}
         onDone={() => setDecision(null)}
       />
-    </div>
+    </>
   );
 }
 
@@ -79,7 +83,7 @@ function SubmissionRow({
   const isPending = submission.status === "pending";
 
   return (
-    <Card className="glass">
+    <Card className="glass lift">
       <CardContent className="flex flex-wrap items-start gap-4 p-4">
         <div className="min-w-0 flex-1 space-y-2">
           <div className="flex flex-wrap items-center gap-2">

@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/shared/empty-state";
+import { StaggerGrid, StaggerItem } from "@/components/shared/motion";
 import { Pagination } from "@/components/shared/pagination";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { UserActions } from "@/components/admin/user-actions";
@@ -166,14 +167,15 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
         />
       ) : (
         <>
-          <div className="space-y-3">
+          <StaggerGrid className="space-y-3">
             {users.map((user) => {
               const wallet = wallets.get(user.id);
               const referral = referrals.get(user.id);
               const name = user.full_name || user.username || user.email;
 
               return (
-                <Card key={user.id} className="glass">
+                <StaggerItem key={user.id}>
+                <Card className="glass lift">
                   <CardContent className="flex flex-wrap items-start gap-4 p-4">
                     <div className="min-w-0 flex-1 space-y-2">
                       <div className="flex flex-wrap items-center gap-2">
@@ -260,9 +262,10 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
                     />
                   </CardContent>
                 </Card>
+                </StaggerItem>
               );
             })}
-          </div>
+          </StaggerGrid>
 
           <Pagination page={page} totalPages={totalPages} baseHref={baseHref} />
         </>

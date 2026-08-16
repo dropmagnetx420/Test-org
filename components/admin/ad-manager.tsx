@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/sonner";
+import { StaggerGrid, StaggerItem } from "@/components/shared/motion";
 import { SubmitButton } from "@/components/shared/submit-button";
 import { saveAdPlacement } from "@/lib/actions/admin";
 import { AD_FORMATS, AD_PLACEMENTS, AD_PROVIDERS } from "@/lib/constants";
@@ -32,16 +33,13 @@ export function AdManager({
   placements: Partial<Record<AdPlacementSlot, AdPlacementConfig>>;
 }) {
   return (
-    <div className="space-y-4">
+    <StaggerGrid className="space-y-4">
       {AD_PLACEMENTS.map((slot) => (
-        <PlacementCard
-          key={slot.value}
-          slot={slot.value}
-          label={slot.label}
-          config={placements[slot.value]}
-        />
+        <StaggerItem key={slot.value}>
+          <PlacementCard slot={slot.value} label={slot.label} config={placements[slot.value]} />
+        </StaggerItem>
       ))}
-    </div>
+    </StaggerGrid>
   );
 }
 

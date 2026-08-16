@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AnimatedNumber } from "@/components/shared/animated-number";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { MarketForm } from "@/components/admin/market-form";
 import { MarketActions } from "@/components/admin/market-actions";
@@ -64,9 +65,9 @@ export default async function AdminMarketDetailPage({ params }: PageProps) {
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <StatusBadge status={market.status} />
               <span className="text-xs text-muted-foreground">
-                {market.trade_count.toLocaleString()} trade
-                {market.trade_count === 1 ? "" : "s"} · {formatCurrency(market.total_volume)} USDG
-                volume
+                <AnimatedNumber value={market.trade_count} kind="int" /> trade
+                {market.trade_count === 1 ? "" : "s"} ·{" "}
+                <AnimatedNumber value={toNumber(market.total_volume)} kind="currency" /> USDG volume
               </span>
             </div>
           </div>

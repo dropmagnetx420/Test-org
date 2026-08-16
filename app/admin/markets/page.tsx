@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/shared/empty-state";
+import { StaggerGrid, StaggerItem } from "@/components/shared/motion";
 import { Pagination } from "@/components/shared/pagination";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { CloseExpiredButton } from "@/components/admin/close-expired-button";
@@ -150,13 +151,14 @@ export default async function AdminMarketsPage({ searchParams }: PageProps) {
         />
       ) : (
         <>
-          <div className="space-y-3">
+          <StaggerGrid className="space-y-3">
             {markets.map((market) => {
               const sport = SPORTS.find((s) => s.value === market.sport);
               const ended = new Date(market.end_time) < new Date();
 
               return (
-                <Card key={market.id} className="glass transition-colors hover:border-primary/40">
+                <StaggerItem key={market.id}>
+                <Card className="glass lift">
                   <CardContent className="flex flex-wrap items-start gap-4 p-4">
                     <div className="min-w-0 flex-1 space-y-2">
                       <div className="flex flex-wrap items-center gap-2">
@@ -220,9 +222,10 @@ export default async function AdminMarketsPage({ searchParams }: PageProps) {
                     </Button>
                   </CardContent>
                 </Card>
+                </StaggerItem>
               );
             })}
-          </div>
+          </StaggerGrid>
 
           <Pagination page={page} totalPages={totalPages} baseHref={baseHref} />
         </>

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { BadgeCheck } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/shared/empty-state";
+import { StaggerGrid, StaggerItem } from "@/components/shared/motion";
 import { Pagination } from "@/components/shared/pagination";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { ReviewDialog } from "@/components/admin/review-dialog";
@@ -92,9 +93,10 @@ export default async function AdminKycPage({ searchParams }: PageProps) {
         />
       ) : (
         <>
-          <div className="space-y-3">
+          <StaggerGrid className="space-y-3">
             {requests.map((item) => (
-              <Card key={item.id} className="glass">
+              <StaggerItem key={item.id}>
+              <Card className="glass lift">
                 <CardContent className="flex flex-wrap items-start gap-4 p-4">
                   <div className="min-w-0 flex-1 space-y-2">
                     <div className="flex flex-wrap items-center gap-2">
@@ -184,8 +186,9 @@ export default async function AdminKycPage({ searchParams }: PageProps) {
                   )}
                 </CardContent>
               </Card>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerGrid>
 
           <Pagination page={page} totalPages={totalPages} baseHref={`/admin/kyc?status=${status}`} />
         </>

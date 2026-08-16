@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { ScrollText } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/shared/empty-state";
+import { StaggerGrid, StaggerItem } from "@/components/shared/motion";
 import { Pagination } from "@/components/shared/pagination";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/auth";
@@ -96,9 +97,10 @@ export default async function AdminLogsPage({ searchParams }: PageProps) {
         />
       ) : (
         <>
-          <div className="space-y-2">
+          <StaggerGrid className="space-y-2">
             {logs.map((log) => (
-              <Card key={log.id} className="glass">
+              <StaggerItem key={log.id}>
+              <Card className="glass lift">
                 <CardContent className="space-y-2 p-4">
                   <div className="flex flex-wrap items-center gap-2">
                     <span
@@ -143,8 +145,9 @@ export default async function AdminLogsPage({ searchParams }: PageProps) {
                   )}
                 </CardContent>
               </Card>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerGrid>
 
           <Pagination
             page={page}

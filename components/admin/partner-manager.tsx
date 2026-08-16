@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/sonner";
 import { EmptyState } from "@/components/shared/empty-state";
+import { StaggerGrid, StaggerItem } from "@/components/shared/motion";
 import { SubmitButton } from "@/components/shared/submit-button";
 import { deletePartner, savePartner } from "@/lib/actions/admin";
 import { cn } from "@/lib/utils";
@@ -46,11 +47,13 @@ export function PartnerManager({ partners }: { partners: Partner[] }) {
           description="Add partner logos to build credibility on the landing page."
         />
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <StaggerGrid className="grid gap-3 sm:grid-cols-2">
           {partners.map((partner) => (
-            <PartnerRow key={partner.id} partner={partner} onEdit={() => setEditing(partner)} />
+            <StaggerItem key={partner.id}>
+              <PartnerRow partner={partner} onEdit={() => setEditing(partner)} />
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerGrid>
       )}
 
       <PartnerDialog
@@ -80,7 +83,7 @@ function PartnerRow({ partner, onEdit }: { partner: Partner; onEdit: () => void 
   }
 
   return (
-    <Card className={cn("glass", !partner.is_active && "opacity-60")}>
+    <Card className={cn("glass lift", !partner.is_active && "opacity-60")}>
       <CardContent className="flex items-center gap-3 p-4">
         <div className="relative size-12 shrink-0 overflow-hidden rounded-lg bg-secondary/60">
           <Image

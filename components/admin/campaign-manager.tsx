@@ -26,6 +26,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/sonner";
 import { EmptyState } from "@/components/shared/empty-state";
+import { StaggerGrid, StaggerItem } from "@/components/shared/motion";
 import { SubmitButton } from "@/components/shared/submit-button";
 import {
   deleteCampaign,
@@ -88,16 +89,17 @@ export function CampaignManager({ campaigns }: { campaigns: Campaign[] }) {
           description="Create a time-boxed competition to reward your most active users."
         />
       ) : (
-        <div className="space-y-3">
+        <StaggerGrid className="space-y-3">
           {campaigns.map((campaign) => (
-            <CampaignRow
-              key={campaign.id}
-              campaign={campaign}
-              onEdit={() => setEditing(campaign)}
-              onStandings={() => setStandingsFor(campaign)}
-            />
+            <StaggerItem key={campaign.id}>
+              <CampaignRow
+                campaign={campaign}
+                onEdit={() => setEditing(campaign)}
+                onStandings={() => setStandingsFor(campaign)}
+              />
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerGrid>
       )}
 
       <CampaignDialog
@@ -145,7 +147,7 @@ function CampaignRow({
   const status = campaignStatus(campaign);
 
   return (
-    <Card className={cn("glass", !campaign.is_active && "opacity-60")}>
+    <Card className={cn("glass lift", !campaign.is_active && "opacity-60")}>
       <CardContent className="flex flex-wrap items-start gap-3 p-4">
         <div className="min-w-0 flex-1 space-y-2">
           <div className="flex flex-wrap items-center gap-2">

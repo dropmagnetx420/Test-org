@@ -27,6 +27,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/sonner";
 import { EmptyState } from "@/components/shared/empty-state";
+import { StaggerGrid, StaggerItem } from "@/components/shared/motion";
 import { SubmitButton } from "@/components/shared/submit-button";
 import { deleteEarnTask, saveEarnTask } from "@/lib/actions/admin";
 import { EARN_TASK_TYPES } from "@/lib/constants";
@@ -70,11 +71,13 @@ export function TaskManager({ tasks }: { tasks: EarnTask[] }) {
           description="Create a task like “Follow us on X” or “Join our Telegram” to reward users."
         />
       ) : (
-        <div className="space-y-3">
+        <StaggerGrid className="space-y-3">
           {tasks.map((task) => (
-            <TaskRow key={task.id} task={task} onEdit={() => setEditing(task)} />
+            <StaggerItem key={task.id}>
+              <TaskRow task={task} onEdit={() => setEditing(task)} />
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerGrid>
       )}
 
       <TaskDialog
@@ -107,7 +110,7 @@ function TaskRow({ task, onEdit }: { task: EarnTask; onEdit: () => void }) {
   const exhausted = limit !== null && task.claimed_count >= limit;
 
   return (
-    <Card className={cn("glass", !task.is_active && "opacity-60")}>
+    <Card className={cn("glass lift", !task.is_active && "opacity-60")}>
       <CardContent className="flex flex-wrap items-start gap-3 p-4">
         <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-secondary text-lg">
           {typeIcon(task.type)}

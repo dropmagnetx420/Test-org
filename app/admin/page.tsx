@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/shared/stat-card";
+import { AnimatedNumber } from "@/components/shared/animated-number";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/auth";
@@ -89,28 +90,35 @@ export default async function AdminDashboardPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Total users"
-          value={(stats.total_users ?? 0).toLocaleString()}
+          numericValue={stats.total_users ?? 0}
+          kind="int"
           icon={Users}
           accent="primary"
           hint={`+${stats.new_users_today ?? 0} today · ${stats.active_users ?? 0} active`}
         />
         <StatCard
           label="Total volume"
-          value={`${formatCurrency(stats.total_volume ?? 0)} USDG`}
+          numericValue={toNumber(stats.total_volume ?? 0)}
+          kind="currency"
+          suffix=" USDG"
           icon={TrendingUp}
           accent="accent"
           hint={`${formatCurrency(stats.volume_today ?? 0)} today`}
         />
         <StatCard
           label="Fee revenue"
-          value={`${formatCurrency(revenue)} USDG`}
+          numericValue={revenue}
+          kind="currency"
+          suffix=" USDG"
           icon={Percent}
           accent="success"
           hint={`${formatCurrency(stats.fees_today ?? 0)} today`}
         />
         <StatCard
           label="Platform balance"
-          value={`${formatCurrency(stats.platform_balance ?? 0)} USDG`}
+          numericValue={toNumber(stats.platform_balance ?? 0)}
+          kind="currency"
+          suffix=" USDG"
           icon={Wallet}
           accent="warning"
           hint="Sum of all user wallets"
@@ -350,7 +358,9 @@ function QueueCard({
             <Icon className="size-5" />
           </div>
           <div className="min-w-0">
-            <p className="font-mono text-2xl font-semibold tabular-nums">{count}</p>
+            <p className="font-mono text-2xl font-semibold tabular-nums">
+              <AnimatedNumber value={count} kind="int" />
+            </p>
             <p className="truncate text-xs text-muted-foreground">{label}</p>
           </div>
           {count > 0 && (

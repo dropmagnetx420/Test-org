@@ -26,6 +26,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/sonner";
 import { CopyButton } from "@/components/shared/copy-button";
 import { EmptyState } from "@/components/shared/empty-state";
+import { StaggerGrid, StaggerItem } from "@/components/shared/motion";
 import { SubmitButton } from "@/components/shared/submit-button";
 import { deleteDepositAddress, saveDepositAddress } from "@/lib/actions/admin";
 import { ASSETS_BY_NETWORK, NETWORKS, type NetworkValue } from "@/lib/constants";
@@ -56,11 +57,13 @@ export function AddressManager({ addresses }: { addresses: DepositAddress[] }) {
           description="Users cannot deposit until at least one active address exists for each asset."
         />
       ) : (
-        <div className="space-y-3">
+        <StaggerGrid className="space-y-3">
           {addresses.map((address) => (
-            <AddressRow key={address.id} address={address} onEdit={() => setEditing(address)} />
+            <StaggerItem key={address.id}>
+              <AddressRow address={address} onEdit={() => setEditing(address)} />
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerGrid>
       )}
 
       <AddressDialog
@@ -92,7 +95,7 @@ function AddressRow({ address, onEdit }: { address: DepositAddress; onEdit: () =
   const network = NETWORKS.find((n) => n.value === address.network);
 
   return (
-    <Card className={cn("glass", !address.is_active && "opacity-60")}>
+    <Card className={cn("glass lift", !address.is_active && "opacity-60")}>
       <CardContent className="flex flex-wrap items-center gap-3 p-4">
         <div className="min-w-0 flex-1 space-y-1">
           <div className="flex flex-wrap items-center gap-2">
