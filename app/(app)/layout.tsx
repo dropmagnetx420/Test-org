@@ -8,6 +8,7 @@ import { SiteFooter } from "@/components/shared/site-footer";
 import { MaintenanceNotice } from "@/components/shared/maintenance-notice";
 import { AdSlot } from "@/components/shared/ad-slot";
 import { PromoBar } from "@/components/shared/promo-bar";
+import { PageTransition } from "@/components/shared/page-transition";
 import { DashboardNav } from "@/components/dashboard/dashboard-nav";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -52,7 +53,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <DashboardNav unreadCount={count ?? 0} />
             <AdSlot placement="sidebar" className="hidden lg:block" />
           </div>
-          <div className="min-w-0 flex-1">{children}</div>
+          <div className="min-w-0 flex-1"><PageTransition>{children}</PageTransition></div>
         </div>
       </div>
 

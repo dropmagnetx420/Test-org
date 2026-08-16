@@ -28,6 +28,13 @@
   --input: 240 16% 18%;
   --ring: 270 85% 62%;
   --radius: 0.875rem;
+
+  /* Per-sport accents for card meta, badges and data-viz. */
+  --sport-football: 142 70% 48%;
+  --sport-cricket: 199 90% 52%;
+  --sport-basketball: 24 95% 56%;
+  --sport-tennis: 82 78% 52%;
+  --sport-esports: 280 85% 64%;
 }
 
 @theme inline {
@@ -55,6 +62,12 @@
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
 
+  --color-sport-football: hsl(var(--sport-football));
+  --color-sport-cricket: hsl(var(--sport-cricket));
+  --color-sport-basketball: hsl(var(--sport-basketball));
+  --color-sport-tennis: hsl(var(--sport-tennis));
+  --color-sport-esports: hsl(var(--sport-esports));
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -69,6 +82,7 @@
   --animate-gradient: gradient 8s ease infinite;
   --animate-pulse-ring: pulse-ring 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   --animate-marquee: marquee 32s linear infinite;
+  --animate-border-flow: border-flow 6s linear infinite;
   --animate-slide-up: slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   --animate-fade-in: fade-in 0.4s ease-out;
   --animate-accordion-down: accordion-down 0.22s ease-out;
@@ -126,6 +140,11 @@
 @keyframes marquee {
   from { transform: translateX(0) }
   to   { transform: translateX(-50%) }
+}
+
+@keyframes border-flow {
+  0%   { background-position: 0% 50% }
+  100% { background-position: 200% 50% }
 }
 
 @keyframes slide-up {
@@ -186,9 +205,10 @@
    */
   .aurora {
     background-image:
-      radial-gradient(42rem 30rem at 12% 8%,  hsl(268 90% 60% / 0.30), transparent 60%),
-      radial-gradient(38rem 28rem at 88% 22%, hsl(190 95% 55% / 0.22), transparent 62%),
-      radial-gradient(34rem 26rem at 42% 96%, hsl(310 90% 62% / 0.20), transparent 60%);
+      radial-gradient(42rem 30rem at 12% 8%,  hsl(268 90% 60% / 0.40), transparent 60%),
+      radial-gradient(38rem 28rem at 88% 22%, hsl(190 95% 55% / 0.30), transparent 62%),
+      radial-gradient(34rem 26rem at 42% 96%, hsl(310 90% 62% / 0.28), transparent 60%),
+      radial-gradient(30rem 24rem at 78% 78%, hsl(150 85% 52% / 0.16), transparent 62%);
     animation: aurora-drift 26s ease-in-out infinite;
     will-change: transform;
   }
@@ -235,9 +255,32 @@
     pointer-events: none;
   }
 
+  /* Animated sibling of .border-gradient — the gradient ring flows continuously
+     for a premium, alive feel on hero/feature surfaces. */
+  .border-gradient-flow {
+    position: relative;
+    background-clip: padding-box;
+  }
+  .border-gradient-flow::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(120deg,
+      hsl(270 85% 62%), hsl(190 95% 55%), hsl(320 90% 62%), hsl(270 85% 62%));
+    background-size: 200% 200%;
+    animation: border-flow 6s linear infinite;
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
   .glow-primary { box-shadow: 0 0 34px -8px hsl(var(--primary) / 0.65) }
   .glow-accent  { box-shadow: 0 0 34px -8px hsl(var(--accent) / 0.65) }
   .glow-success { box-shadow: 0 0 34px -8px hsl(var(--success) / 0.65) }
+  .glow-lg      { box-shadow: 0 0 56px -12px hsl(var(--primary) / 0.55), 0 0 24px -14px hsl(var(--accent) / 0.6) }
 
   .shimmer {
     background: linear-gradient(90deg,
@@ -322,7 +365,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .aurora, .sheen::after { animation: none !important }
+  .aurora, .sheen::after, .border-gradient-flow::before { animation: none !important }
   .promo-card { transform: none !important }
 }
 

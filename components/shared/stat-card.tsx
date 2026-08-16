@@ -1,10 +1,17 @@
 import type { LucideIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { AnimatedNumber } from "@/components/shared/animated-number";
 import { cn } from "@/lib/utils";
 
 interface StatCardProps {
   label: string;
-  value: string;
+  /** Pre-formatted display string. Ignored when `numericValue` is set. */
+  value?: string;
+  /** Raw number to count up to. Renders an AnimatedNumber with `kind`. */
+  numericValue?: number;
+  kind?: "int" | "compact" | "currency";
+  prefix?: string;
+  suffix?: string;
   hint?: string;
   icon?: LucideIcon;
   accent?: "primary" | "accent" | "success" | "warning" | "destructive";
@@ -22,17 +29,31 @@ const ACCENTS: Record<string, string> = {
 export function StatCard({
   label,
   value,
+  numericValue,
+  kind = "currency",
+  prefix,
+  suffix,
   hint,
   icon: Icon,
   accent = "primary",
   className,
 }: StatCardProps) {
   return (
-    <Card className={cn("glass overflow-hidden transition-colors hover:border-primary/40", className)}>
+    <Card className={cn("lift glass overflow-hidden hover:border-primary/40", className)}>
       <CardContent className="flex items-start justify-between gap-3 p-5">
         <div className="min-w-0 space-y-1">
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
-          <p className="truncate font-mono text-2xl font-semibold tabular-nums">{value}</p>
+          <p className="truncate font-mono text-2xl font-semibold tabular-nums">
+            {numericValue !== undefined ? (
+              <>
+                {prefix}
+                <AnimatedNumber value={numericValue} kind={kind} />
+                {suffix}
+              </>
+            ) : (
+              value
+            )}
+          </p>
           {hint && <p className="truncate text-xs text-muted-foreground">{hint}</p>}
         </div>
         {Icon && (

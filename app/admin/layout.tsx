@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { SiteHeader } from "@/components/shared/site-header";
 import { HeaderAccount } from "@/components/shared/header-account";
 import { AdminNav } from "@/components/admin/admin-nav";
+import { PageTransition } from "@/components/shared/page-transition";
 import { cn } from "@/lib/utils";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -82,7 +83,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <AdminNav badges={badges} />
       </div>
 
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:px-8">{children}</main>
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:px-8"><PageTransition>{children}</PageTransition></main>
     </>
   );
 }

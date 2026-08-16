@@ -1,12 +1,16 @@
+"use client";
+
 import type { CSSProperties, ReactNode } from "react";
-import { cn } from "@/lib/utils";
+import { m, useReducedMotion, type Variants } from "framer-motion";
+
+const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 /**
- * CSS-only entrance animations. These were framer-motion `whileInView`
- * components, which forced every consumer into the client bundle and left
- * content at opacity 0 until hydration — bad for LCP and for crawlers that
- * never run the observer. The `reveal` keyframe animates from a visible-by-
- * default stylesheet rule, so text is present in the initial HTML either way.
+ * Framer-motion entrance primitives. The API (FadeIn / StaggerGrid /
+ * StaggerItem) matches the earlier CSS-only version so call sites are
+ * unchanged. Everything animates once on scroll-in and collapses to an
+ * opacity-only fade under `prefers-reduced-motion`. Never wrap the hero <h1>
+ * (LCP element) in these — keep that server-rendered and static.
  */
 export function FadeIn({
   children,
@@ -17,12 +21,34 @@ export function FadeIn({
   delay?: number;
   className?: string;
 }) {
+  const reduce = useReducedMotion();
   return (
-    <div className={cn("reveal", className)} style={{ animationDelay: `${delay * 1000}ms` }}>
+    <m.div
+      className={className}
+      initial={{ opacity: 0, y: reduce ? 0 : 18 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-8% 0px" }}
+      transition={{ duration: 0.55, ease: EASE, delay }}
+    >
       {children}
-    </div>
+    </m.div>
   );
 }
+
+const containerVariants: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.06, delayChildren: 0.02 } },
+};
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 18 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE } },
+};
+
+const itemVariantsReduced: Variants = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { duration: 0.3 } },
+};
 
 export function StaggerGrid({
   children,
@@ -31,7 +57,17 @@ export function StaggerGrid({
   children: ReactNode;
   className?: string;
 }) {
-  return <div className={cn("stagger", className)}>{children}</div>;
+  return (
+    <m.div
+      className={className}
+      variants={containerVariants}
+      initial="hidden"
+      whileInView="show"
+      viewport={{ once: true, margin: "-8% 0px" }}
+    >
+      {children}
+    </m.div>
+  );
 }
 
 export function StaggerItem({
@@ -43,9 +79,10 @@ export function StaggerItem({
   className?: string;
   style?: CSSProperties;
 }) {
+  const reduce = useReducedMotion();
   return (
-    <div className={cn("reveal", className)} style={style}>
+    <m.div className={className} style={style} variants={reduce ? itemVariantsReduced : itemVariants}>
       {children}
-    </div>
+    </m.div>
   );
 }

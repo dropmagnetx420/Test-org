@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { AnimatedBackground } from "@/components/shared/animated-background";
+import { MotionProvider } from "@/components/shared/motion-provider";
 import { SITE_NAME, SITE_DESCRIPTION, SITE_URL } from "@/lib/constants";
 import "./globals.css";
 
@@ -71,7 +72,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased min-h-full flex flex-col`}
       >
         <AnimatedBackground />
-        {children}
+        <MotionProvider>{children}</MotionProvider>
         <Toaster />
       </body>
     </html>

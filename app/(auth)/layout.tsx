@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@/components/shared/logo";
+import { PageTransition } from "@/components/shared/page-transition";
 import { getSettings } from "@/lib/auth";
 
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
@@ -11,7 +12,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
         <Logo size="lg" siteName={settings.site_name} />
       </Link>
 
-      <div className="w-full max-w-md">{children}</div>
+      <div className="w-full max-w-md"><PageTransition>{children}</PageTransition></div>
 
       <p className="mt-8 text-center text-xs text-muted-foreground">
         Protected by rate limiting and row-level security.{" "}
