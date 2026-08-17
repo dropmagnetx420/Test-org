@@ -12,7 +12,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const profile = await requireAdmin();
   const supabase = await createClient();
 
-  const [settings, deposits, withdrawals, kyc, tasks] = await Promise.all([
+  const [settings, deposits, withdrawals, kyc, tasks, support] = await Promise.all([
     getSettings(),
     supabase
       .from("deposit_requests")
@@ -30,6 +30,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       .from("task_submissions")
       .select("id", { count: "exact", head: true })
       .eq("status", "pending"),
+    supabase
+      .from("support_conversations")
+      .select("id", { count: "exact", head: true })
+      .gt("admin_unread", 0),
   ]);
 
   const badges = {
@@ -37,6 +41,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     withdrawals: withdrawals.count ?? 0,
     kyc: kyc.count ?? 0,
     tasks: tasks.count ?? 0,
+    support: support.count ?? 0,
   };
   const queued = badges.deposits + badges.withdrawals + badges.kyc + badges.tasks;
 

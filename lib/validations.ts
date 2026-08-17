@@ -92,6 +92,11 @@ export const updateProfileSchema = z.object({
   country: z.string().trim().max(60).optional().or(z.literal("")),
 });
 
+// --------------------------------------------------------------- support
+export const supportMessageSchema = z.object({
+  body: z.string().trim().min(1, "Type a message").max(2000, "Message is too long"),
+});
+
 // ----------------------------------------------------------------- trade
 export const placeTradeSchema = z.object({
   marketId: z.string().uuid("Invalid market"),

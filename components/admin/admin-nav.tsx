@@ -11,6 +11,7 @@ import {
   Bell,
   Briefcase,
   LayoutDashboard,
+  MessagesSquare,
   ScrollText,
   Settings,
   Trophy,
@@ -23,6 +24,7 @@ export interface AdminBadges {
   withdrawals: number;
   kyc: number;
   tasks: number;
+  support: number;
 }
 
 type BadgeKey = keyof AdminBadges;
@@ -49,6 +51,7 @@ const GROUPS: AdminLink[][] = [
     },
     { href: "/admin/kyc", label: "KYC", icon: BadgeCheck, badgeKey: "kyc" },
     { href: "/admin/tasks", label: "Tasks", icon: Briefcase, badgeKey: "tasks" },
+    { href: "/admin/support", label: "Support", icon: MessagesSquare, badgeKey: "support" },
   ],
   [
     { href: "/admin/markets", label: "Markets", icon: Trophy },

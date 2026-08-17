@@ -260,6 +260,35 @@ export interface Notification {
   created_at: string;
 }
 
+export type SupportMessageRole = "user" | "admin" | "system";
+
+export interface SupportConversation {
+  id: string;
+  user_id: string;
+  status: "open" | "closed";
+  last_message_at: string | null;
+  last_sender_role: SupportMessageRole | null;
+  user_unread: number;
+  admin_unread: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SupportMessage {
+  id: string;
+  conversation_id: string;
+  sender_id: string | null;
+  sender_role: SupportMessageRole;
+  body: string;
+  created_at: string;
+  read_at: string | null;
+}
+
+/** A conversation plus the owner's identity, for the admin inbox list. */
+export interface SupportConversationWithUser extends SupportConversation {
+  user: Pick<Profile, "id" | "email" | "username" | "full_name" | "avatar_url"> | null;
+}
+
 export interface BonusHistory {
   id: string;
   user_id: string;

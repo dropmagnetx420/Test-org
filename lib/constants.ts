@@ -180,6 +180,7 @@ export const RATE_LIMITS = {
   KYC: { limit: 4, windowMs: 900_000 },
   TASK: { limit: 10, windowMs: 300_000 },
   AD_CLAIM: { limit: 30, windowMs: 300_000 },
+  CHAT: { limit: 20, windowMs: 60_000 },
   DEFAULT: { limit: 60, windowMs: 60_000 },
 } as const;
 

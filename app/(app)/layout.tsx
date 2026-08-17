@@ -10,6 +10,7 @@ import { AdSlot } from "@/components/shared/ad-slot";
 import { PromoBar } from "@/components/shared/promo-bar";
 import { PageTransition } from "@/components/shared/page-transition";
 import { DashboardNav } from "@/components/dashboard/dashboard-nav";
+import { ChatWidget } from "@/components/support/chat-widget";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   /**
@@ -59,6 +60,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
       <AdSlot placement="footer" className="mx-auto mb-6 w-full max-w-7xl px-4 sm:px-6 lg:px-8" />
       <SiteFooter settings={settings} />
+      <ChatWidget />
     </>
   );
 }
