@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Coins, Megaphone, Users } from "lucide-react";
+import { ArrowRight, Coins, HandCoins, Megaphone, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FadeIn } from "@/components/shared/motion";
 
@@ -30,7 +30,7 @@ export function EarnCta() {
         <div className="grid gap-6 p-5 sm:gap-8 sm:p-10 lg:grid-cols-[1fr_1.15fr] lg:items-center">
           <FadeIn>
             <p className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-300">
-              <Coins className="size-3.5" />
+              <HandCoins className="size-3.5" />
               No deposit needed
             </p>
 
