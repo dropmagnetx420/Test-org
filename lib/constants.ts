@@ -129,6 +129,7 @@ export const STORAGE_BUCKETS = {
   RECEIPTS: "deposit-receipts",
   PUBLIC: "public-assets",
   TASK_PROOFS: "task-proofs",
+  AVATARS: "avatars",
 } as const;
 
 /**

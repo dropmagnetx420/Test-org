@@ -9,6 +9,7 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { ProfileForm } from "@/components/profile/profile-form";
 import { PasswordForm } from "@/components/profile/password-form";
 import { LoginMethods } from "@/components/profile/login-methods";
+import { AvatarUploader } from "@/components/profile/avatar-uploader";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { signOut } from "@/lib/actions/auth";
@@ -18,9 +19,6 @@ export const metadata: Metadata = { title: "Profile" };
 
 export default async function ProfilePage() {
   const profile = await requireProfile();
-  const initials = (profile.full_name || profile.username || profile.email || "?")
-    .slice(0, 2)
-    .toUpperCase();
   const supabase = await createClient();
   const { data: identityData } = await supabase.auth.getUserIdentities();
   const identities = (identityData?.identities ?? []) as UserIdentity[];
@@ -36,9 +34,10 @@ export default async function ProfilePage() {
 
       <Card className="glass">
         <CardContent className="flex flex-wrap items-center gap-4 p-5">
-          <div className="grid size-14 shrink-0 place-items-center rounded-full bg-gradient-to-br from-primary/30 to-cyan-500/20 font-mono text-lg font-semibold text-primary">
-            {initials}
-          </div>
+          <AvatarUploader
+            avatarUrl={profile.avatar_url}
+            name={profile.full_name || profile.username || profile.email || "?"}
+          />
 
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
