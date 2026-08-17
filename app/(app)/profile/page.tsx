@@ -1,12 +1,16 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import type { Metadata } from "next";
+import type { UserIdentity } from "@supabase/supabase-js";
 import { BadgeCheck, LogOut, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { ProfileForm } from "@/components/profile/profile-form";
 import { PasswordForm } from "@/components/profile/password-form";
+import { LoginMethods } from "@/components/profile/login-methods";
 import { requireProfile } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
 import { signOut } from "@/lib/actions/auth";
 import { formatCurrency } from "@/lib/utils";
 
@@ -17,6 +21,9 @@ export default async function ProfilePage() {
   const initials = (profile.full_name || profile.username || profile.email || "?")
     .slice(0, 2)
     .toUpperCase();
+  const supabase = await createClient();
+  const { data: identityData } = await supabase.auth.getUserIdentities();
+  const identities = (identityData?.identities ?? []) as UserIdentity[];
 
   return (
     <div className="space-y-6">
@@ -81,6 +88,10 @@ export default async function ProfilePage() {
 
         <div className="space-y-6">
           <PasswordForm />
+
+          <Suspense fallback={null}>
+            <LoginMethods identities={identities} />
+          </Suspense>
 
           <Card className="glass">
             <CardHeader className="flex-row items-start gap-3 space-y-0">
