@@ -715,8 +715,7 @@ export async function updateLegalPage(
   const supabase = await createClient();
   const { error } = await supabase
     .from("legal_pages")
-    .update({ title, content })
-    .eq("slug", slug);
+    .upsert({ slug, title, content }, { onConflict: "slug" });
 
   if (error) return toActionError(error);
 
