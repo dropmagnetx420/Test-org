@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/shared/logo";
 import { FadeIn } from "@/components/shared/motion";
-import { SPORTS, SITE_DESCRIPTION } from "@/lib/constants";
+import { SPORTS, SITE_DESCRIPTION, LEGAL_PAGES } from "@/lib/constants";
 import type { SiteSettings } from "@/types/database";
 
 const TwitterIcon = () => (
@@ -116,12 +116,27 @@ export function SiteFooter({ settings }: { settings: SiteSettings | null }) {
       </FadeIn>
 
       <div className="border-t border-border/50">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-6 text-xs text-muted-foreground sm:flex-row sm:px-6 lg:px-8">
-          <p>
-            © {new Date().getFullYear()} {settings?.site_name ?? "NextGen Predict"}. All rights
-            reserved.
+        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-6 text-xs text-muted-foreground sm:px-6 lg:px-8">
+          <div className="flex flex-col items-center justify-between gap-2 sm:flex-row">
+            <p>
+              © {new Date().getFullYear()} {settings?.site_name ?? "NextGen Predict"}. All rights
+              reserved.
+            </p>
+            <nav className="flex items-center gap-4">
+              {LEGAL_PAGES.map((page) => (
+                <Link
+                  key={page.slug}
+                  href={page.route}
+                  className="transition-colors hover:text-primary"
+                >
+                  {page.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+          <p className="text-center sm:text-left">
+            Prediction markets carry risk. Trade responsibly and only what you can afford.
           </p>
-          <p>Prediction markets carry risk. Trade responsibly and only what you can afford.</p>
         </div>
       </div>
     </footer>
