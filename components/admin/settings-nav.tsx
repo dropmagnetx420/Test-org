@@ -8,6 +8,7 @@ const TABS = [
   { href: "/admin/settings/campaigns", label: "Campaigns" },
   { href: "/admin/settings/partners", label: "Partners" },
   { href: "/admin/settings/ads", label: "Ad placements" },
+  { href: "/admin/settings/legal", label: "Legal pages" },
 ];
 
 export function SettingsNav({ active }: { active: string }) {
