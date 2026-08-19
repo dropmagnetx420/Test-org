@@ -26,6 +26,7 @@ import {
   bannerSchema,
   campaignSchema,
   partnerSchema,
+  legalPageSchema,
   announcementSchema,
   earnTaskSchema,
   reviewTaskSchema,
@@ -694,6 +695,36 @@ export async function updateSiteSettings(
   updateTag(CACHE_TAGS.SETTINGS);
   revalidatePath("/", "layout");
   return ok(null, "Settings saved.");
+}
+
+// ===================================================== LEGAL PAGES
+export async function updateLegalPage(
+  _prev: ActionResult | null,
+  fd: FormData
+): Promise<ActionResult> {
+  await requireAdmin();
+
+  const parsed = parseOrFail(legalPageSchema, {
+    slug: formString(fd, "slug"),
+    title: formString(fd, "title"),
+    content: formString(fd, "content"),
+  });
+  if (!parsed.ok) return parsed.result;
+
+  const { slug, title, content } = parsed.data;
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("legal_pages")
+    .update({ title, content })
+    .eq("slug", slug);
+
+  if (error) return toActionError(error);
+
+  await logAdminAction({ action: "update_legal_page", entityType: "legal_page", entityId: slug });
+
+  updateTag(CACHE_TAGS.LEGAL);
+  revalidatePath(`/${slug}`);
+  return ok(null, "Page saved.");
 }
 
 // ===================================================== DEPOSIT ADDRESSES

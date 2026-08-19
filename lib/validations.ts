@@ -333,6 +333,12 @@ export const partnerSchema = z.object({
   isActive: z.boolean().default(true),
 });
 
+export const legalPageSchema = z.object({
+  slug: z.enum(["terms", "privacy"]),
+  title: z.string().trim().min(2, "Enter a title").max(120),
+  content: z.string().max(50000, "Content is too long"),
+});
+
 export const announcementSchema = z.object({
   title: z.string().trim().min(3, "Enter a title").max(120),
   message: z.string().trim().min(3, "Enter a message").max(1000),

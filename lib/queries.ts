@@ -10,6 +10,8 @@ import type {
   EarnTask,
   EarnTaskWithState,
   LeaderboardRow,
+  LegalPage,
+  LegalPageSlug,
   Market,
   MarketOption,
   MarketOddsPoint,
@@ -117,6 +119,20 @@ export const getPartners = cached(
   },
   ["partners"],
   { revalidate: 300, tags: [CACHE_TAGS.PARTNERS] }
+);
+
+export const getLegalPage = cached(
+  async (slug: LegalPageSlug): Promise<LegalPage | null> => {
+    const supabase = createPublicClient();
+    const { data } = await supabase
+      .from("legal_pages")
+      .select("*")
+      .eq("slug", slug)
+      .single();
+    return (data as LegalPage) ?? null;
+  },
+  ["legal-page"],
+  { revalidate: 300, tags: [CACHE_TAGS.LEGAL] }
 );
 
 /**

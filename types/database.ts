@@ -506,6 +506,15 @@ export interface SiteSettings {
   updated_at: string;
 }
 
+export type LegalPageSlug = "terms" | "privacy";
+
+export interface LegalPage {
+  slug: LegalPageSlug;
+  title: string;
+  content: string;
+  updated_at: string;
+}
+
 export interface MarketWithOptions extends Market {
   options: MarketOption[];
 }

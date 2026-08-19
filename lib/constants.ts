@@ -145,7 +145,17 @@ export const CACHE_TAGS = {
   ADS: "ad-placements",
   STATS: "public-stats",
   CAMPAIGNS: "campaigns",
+  LEGAL: "legal-pages",
 } as const;
+
+/**
+ * The two admin-editable legal documents. The admin editor, the footer, and the
+ * public routes all read this list so the slugs, labels, and paths never drift.
+ */
+export const LEGAL_PAGES = [
+  { slug: "terms", label: "Terms of Service", route: "/terms" },
+  { slug: "privacy", label: "Privacy Policy", route: "/privacy" },
+] as const;
 
 /**
  * The three ways a campaign can rank users. `unit` tells the UI whether a score
