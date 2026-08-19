@@ -5,14 +5,14 @@
 -- always resolve. Content is world-readable; only admins may edit it.
 -- =====================================================================
 
-create table public.legal_pages (
+create table if not exists public.legal_pages (
   slug        text primary key check (slug in ('terms', 'privacy')),
   title       text not null,
   content     text not null default '',
   updated_at  timestamptz not null default now()
 );
 
-create trigger legal_pages_touch
+create or replace trigger legal_pages_touch
   before update on public.legal_pages
   for each row execute function public.touch_updated_at();
 
@@ -20,10 +20,12 @@ create trigger legal_pages_touch
 alter table public.legal_pages enable row level security;
 
 -- Legal copy is public; anyone (including anon) may read it.
+drop policy if exists "legal_pages_select_all" on public.legal_pages;
 create policy "legal_pages_select_all" on public.legal_pages
   for select using (true);
 
 -- Only admins write. Mirrors campaigns_admin_write.
+drop policy if exists "legal_pages_admin_write" on public.legal_pages;
 create policy "legal_pages_admin_write" on public.legal_pages
   for all using (public.is_admin()) with check (public.is_admin());
 
